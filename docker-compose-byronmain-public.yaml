@@ -1,0 +1,28 @@
+version: "3"
+services:
+  cardano-producing: # block-producing node
+    image: droe/cardano-node:pioneer
+    container_name: cardano-producing
+    volumes:
+      - $PWD/active_config/:/config
+    environment:
+      - CARDANO_NETWORK=byron-main
+    command: --producing
+    ports:
+      - 3000:3000
+      - 12788:12788 # For EKG
+      - 12798:12798 # For Prometheus
+    restart: unless-stopped
+  cardano-relay: # relay node
+    image: droe/cardano-node:pioneer
+    container_name: cardano-relay
+    volumes:
+      - $PWD/active_config/:/config
+    environment:
+      - CARDANO_NETWORK=byron-main
+    command: --relay
+    ports:
+      - 3001:3001
+      - 12789:12789 # For EKG
+      - 12799:12799 # For Prometheus
+    restart: unless-stopped

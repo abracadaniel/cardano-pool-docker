@@ -1,0 +1,9 @@
+{
+  "Producers": [
+    {
+      "addr": "[RELAY_IP]",
+      "port": 3001,
+      "valency": 1
+    }
+  ]
+}
