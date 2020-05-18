@@ -1,5 +1,5 @@
 from debian:stable-slim
-LABEL maintainer="droe@pm.me"
+LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
 RUN apt-get update -y \
@@ -22,6 +22,23 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && ./configure \
     && make install && cd ..
 
+# Install cardano-node
+#ENV derp2=''
+ARG CARDANO_BRANCH
+RUN echo "Building $CARDANO_BRANCH..." \
+    && echo $CARDANO_BRANCH > /CARDANO_BRANCH
+RUN mkdir -p /cardano-node/
+RUN git clone https://github.com/input-output-hk/cardano-node.git \
+    && cd cardano-node \
+    && git fetch --all --tags \
+    && git checkout $CARDANO_BRANCH
+WORKDIR /cardano-node/
+RUN cabal build all
+RUN cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-1.11.0/x/cardano-node/build/cardano-node/cardano-node /usr/bin \
+    && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-1.11.0/x/cardano-cli/build/cardano-cli/cardano-cli /usr/bin
+#RUN cabal install cardano-node cardano-cli
+
+
 # Expose ports
 ## cardano-node, EKG, Prometheus
 EXPOSE 3000-3001 12788-12789 12798-12799
@@ -30,25 +47,12 @@ EXPOSE 3000-3001 12788-12789 12798-12799
 VOLUME /config/
 
 # ENV variables
-ENV PRODUCER_IP="" \
-    PRODUCER_PORT="3000" \
+ENV PRODUCING_IP="" \
+    PRODUCING_PORT="3000" \
     RELAY_IP="" \
     RELAY_PORT="3001" \
     CARDANO_NETWORK="pioneer" \
-    CARDANO_NODE_SOCKET_PATH="/default.socket" \
-ENV CARDANO_BRANCH "$cardano_branch"
-
-# Install cardano-node
-RUN mkdir -p /cardano-node/
-RUN git clone https://github.com/input-output-hk/cardano-node.git \
-    && cd cardano-node \
-    && git fetch --all --tags \
-    && git checkout ${CARDANO_BRANCH}
-RUN cd cardano-node && cabal build all
-RUN cd cardano-node && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-1.11.0/x/cardano-node/build/cardano-node/cardano-node /usr/bin \
-    && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-1.11.0/x/cardano-cli/build/cardano-cli/cardano-cli /usr/bin
-WORKDIR /cardano-node/
-
+    CARDANO_NODE_SOCKET_PATH="/default.socket"
 
 # Add config
 ADD config-templates/ /config-templates/
@@ -59,4 +63,4 @@ ADD scripts/ /scripts/
 RUN chmod -R +x /scripts/
 
 
-ENTRYPOINT ["/script/start-cardano-node.sh"]
+ENTRYPOINT ["/scripts/start-cardano-node.sh"]

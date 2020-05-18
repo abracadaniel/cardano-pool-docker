@@ -3,25 +3,25 @@
 version: "3"
 services:
   cardano-byron-producing: # block-producing node
-    image: droe/cardano-node:pioneer
-    container_name: cardano-byron-producing
+    image: arrakis/cardano-node:pioneer
+    container_name: cardano-main-producing
     network_mode: host
     volumes:
       - $PWD/active_config/:/config
     environment:
-      - CARDANO_NETWORK=byron-main
+      - CARDANO_NETWORK=main
       - PRODUCING_PORT=3010
       - RELAY_PORT=3011
     command: --producing
     restart: unless-stopped
   cardano-byron-relay: # relay node
-    image: droe/cardano-node:pioneer
-    container_name: cardano-byron-relay
+    image: arrakis/cardano-node:pioneer
+    container_name: cardano-main-relay
     network_mode: host
     volumes:
       - $PWD/active_config/:/config
     environment:
-      - CARDANO_NETWORK=byron-main
+      - CARDANO_NETWORK=main
       - PRODUCING_PORT=3010
       - RELAY_PORT=3011
     command: --relay

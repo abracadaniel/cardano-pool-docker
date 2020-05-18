@@ -15,7 +15,7 @@ docker run -dit --rm \
     -e PRODUCING_IP='cardano-producing' \
     -v $PWD/active_config/:/config/ \
     --name cardano-producing \
-    droe/cardano-node:pioneer --resetproducing --resolve_docker_hostname --producing
+    arrakis/cardano-node:pioneer --resetproducing --resolve_docker_hostname --producing
 
 docker run -dit --rm \
     --network=cardano \
@@ -26,6 +26,6 @@ docker run -dit --rm \
     -e RELAY_IP='cardano-relay' \
     -v $PWD/active_config/:/config/ \
     --name cardano-relay \
-    droe/cardano-node:pioneer --resetrelay --resolve_docker_hostname --relay
+    arrakis/cardano-node:pioneer --resetrelay --resolve_docker_hostname --relay
 
 docker logs -f cardano-producing

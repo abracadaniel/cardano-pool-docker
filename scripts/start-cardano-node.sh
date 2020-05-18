@@ -147,7 +147,9 @@ function help {
     echo "--help                        see this message."
     echo "Environment variables:"
     echo "PRODUCING_IP                  IP address for the relay node to connect to the block-producing node. Defaults to public IP."
+    echo "PRODUCING_PORT                Port of the block-producing node. Defaults to 3000."
     echo "RELAY_IP                      IP address for the block-producing node to connect to the relay node. Defaults to public IP."
+    echo "RELAY_PORT                    Port of the relay node. Defaults to 3001."
     exit
 }
 
@@ -156,7 +158,9 @@ function node_info {
     echo "IP Addresses"
     echo "Public IP: ${PUBLIC_IP}"
     echo "Producing IP: ${PRODUCING_IP}"
+    echo "Producing Port: ${PRODUCING_PORT}"
     echo "Relay IP: ${RELAY_IP}"
+    echo "Relay Port: ${RELAY_PORT}"
 }
 
 for i in "$@"
@@ -203,7 +207,7 @@ fi
 
 if [ -n "$START_PRODUCING" ] || [ -n "$START_RELAY" ]; then
     # Display ip address info
-    ip_info
+    node_info
 
     # Init configs
     init_genesis_cfg

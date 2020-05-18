@@ -12,4 +12,4 @@ docker run -it --rm \
     -e PRODUCING_IP='127.0.0.1' \
     -v $PWD/active_config/:/config/ \
     --entrypoint=/bin/bash \
-    cardano-node
+    arrakis/cardano-node:pioneer

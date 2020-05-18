@@ -11,23 +11,23 @@ docker run -dit --rm \
     -p 3000:3000 \
     -p 12788:12788 \
     -p 12798:12798 \
-    -e CARDANO_NETWORK=byron-main \
+    -e CARDANO_NETWORK=main \
     -e RELAY_IP='cardano-relay' \
     -e PRODUCING_IP='cardano-producing' \
     -v $PWD/active_config/:/config/ \
     --name cardano-producing \
-    droe/cardano-node:pioneer --resetproducing --resolve_docker_hostname --producing
+    arrakis/cardano-node:pioneer --resetproducing --resolve_docker_hostname --producing
 
 docker run -dit --rm \
     --network=cardano \
     -p 3001:3001 \
     -p 12789:12789 \
     -p 12799:12799 \
-    -e CARDANO_NETWORK=byron-main \
+    -e CARDANO_NETWORK=main \
     -e PRODUCING_IP='cardano-producing' \
     -e RELAY_IP='cardano-relay' \
     -v $PWD/active_config/:/config/ \
     --name cardano-relay \
-    droe/cardano-node:pioneer --resetrelay --resolve_docker_hostname --relay
+    arrakis/cardano-node:pioneer --resetrelay --resolve_docker_hostname --relay
 
 docker logs -f cardano-producing

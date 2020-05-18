@@ -47,7 +47,7 @@ This will run both a block-producing node and a relay node on the pioneer dev ne
 version: "3"
 services:
   cardano-prod: # block-producing node
-    image: droe/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer
     container_name: cardano-prod
     volumes:
       - </path/to/config>:/config
@@ -60,7 +60,7 @@ services:
       - 12798:12798 # For Prometheus
     restart: unless-stopped
   cardano-relay: # relay node
-    image: droe/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer
     container_name: cardano-relay
     volumes:
       - </path/to/config>:/config
@@ -82,7 +82,7 @@ This will run both a block-producing node and a relay node on the byron main net
 version: "3"
 services:
   cardano-prod: # block-producing node
-    image: droe/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer
     container_name: cardano-prod
     volumes:
       - </path/to/config>:/config
@@ -95,7 +95,7 @@ services:
       - 12798:12798 # For Prometheus
     restart: unless-stopped
   cardano-relay: # relay node
-    image: droe/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer
     container_name: cardano-relay
     volumes:
       - </path/to/config>:/config
@@ -138,11 +138,12 @@ You can pass the following environment variables to the container.
 
 ### Supported Networks
 Use the CARDANO_NETWORK environment variable to change this.
+The latest supported networks can be found at [https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/index.html](https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/index.html)
 
 | Network | CARDANO_NETWORK value |
 | :-- | -- |
 | Pioneer dev net | pioneer |
-| byron-mainnet | byron-main |
+| byron-mainnet | main |
 
 ## Ports
 The ports to publish for the different nodes. For the nodes to work properly you need to forward the ports 3000 and 3001 to the instances running the nodes.

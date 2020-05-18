@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CARDANO_BRANCH=$(cat /CARDANO_BRANCH)
 (cd /cardano-node \
     && git fetch --all --tags \
     && git tag \
