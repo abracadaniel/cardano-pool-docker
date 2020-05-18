@@ -14,7 +14,7 @@ function init_genesis_cfg {
     mkdir -p /config/${CARDANO_NETWORK}/
     if [ ! -f /config/${CARDANO_NETWORK}/genesis.json ]; then
         echo "Initializing ${CARDANO_NETWORK}/genesis.json"
-        cp /cardano-node/config-templates/${CARDANO_NETWORK}/genesis.json /config/${CARDANO_NETWORK}/genesis.json
+        cp /config-templates/${CARDANO_NETWORK}/genesis.json /config/${CARDANO_NETWORK}/genesis.json
     fi
 }
 
@@ -22,14 +22,14 @@ function init_blockproducing_cfg {
     mkdir -p /config/${CARDANO_NETWORK}/block-producing
     if [ ! -f /config/${CARDANO_NETWORK}/block-producing/topology.json ]; then
         echo "Initializing ${CARDANO_NETWORK}/block-producing/topology.json"
-        cp /cardano-node/config-templates/${CARDANO_NETWORK}/block-producing/topology.json /config/${CARDANO_NETWORK}/block-producing/topology.json
+        cp /config-templates/${CARDANO_NETWORK}/block-producing/topology.json /config/${CARDANO_NETWORK}/block-producing/topology.json
         sed -i "s/\[RELAY_IP\]/${RELAY_IP}/g" /config/${CARDANO_NETWORK}/block-producing/topology.json
         sed -i "s/\[RELAY_PORT\]/${RELAY_PORT}/g" /config/${CARDANO_NETWORK}/block-producing/topology.json
     fi
 
     if [ ! -f /config/${CARDANO_NETWORK}/block-producing/config.json ]; then
         echo "Initializing ${CARDANO_NETWORK}/block-producing/config.json"
-        cp /cardano-node/config-templates/${CARDANO_NETWORK}/block-producing/config.json /config/${CARDANO_NETWORK}/block-producing/config.json
+        cp /config-templates/${CARDANO_NETWORK}/block-producing/config.json /config/${CARDANO_NETWORK}/block-producing/config.json
     fi
 }
 
@@ -37,14 +37,14 @@ function init_relay_cfg {
     mkdir -p /config/${CARDANO_NETWORK}/relay
     if [ ! -f /config/${CARDANO_NETWORK}/relay/topology.json ]; then
         echo "Initializing ${CARDANO_NETWORK}/relay/topology.json"
-        cp /cardano-node/config-templates/${CARDANO_NETWORK}/relay/topology.json /config/${CARDANO_NETWORK}/relay/topology.json
+        cp /config-templates/${CARDANO_NETWORK}/relay/topology.json /config/${CARDANO_NETWORK}/relay/topology.json
         sed -i "s/\[PRODUCING_IP\]/${PRODUCING_IP}/g" /config/${CARDANO_NETWORK}/relay/topology.json
         sed -i "s/\[PRODUCING_PORT\]/${PRODUCING_PORT}/g" /config/${CARDANO_NETWORK}/relay/topology.json
     fi
 
     if [ ! -f /config/relay/config.json ]; then
         echo "Initializing ${CARDANO_NETWORK}/relay/config.json"
-        cp /cardano-node/config-templates/${CARDANO_NETWORK}/relay/config.json /config/${CARDANO_NETWORK}/relay/config.json
+        cp /config-templates/${CARDANO_NETWORK}/relay/config.json /config/${CARDANO_NETWORK}/relay/config.json
     fi
 }
 
