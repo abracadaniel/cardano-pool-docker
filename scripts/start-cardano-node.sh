@@ -24,6 +24,7 @@ function init_blockproducing_cfg {
         echo "Initializing ${CARDANO_NETWORK}/block-producing/topology.json"
         cp /cardano-node/config-templates/${CARDANO_NETWORK}/block-producing/topology.json /config/${CARDANO_NETWORK}/block-producing/topology.json
         sed -i "s/\[RELAY_IP\]/${RELAY_IP}/g" /config/${CARDANO_NETWORK}/block-producing/topology.json
+        sed -i "s/\[RELAY_PORT\]/${RELAY_PORT}/g" /config/${CARDANO_NETWORK}/block-producing/topology.json
     fi
 
     if [ ! -f /config/${CARDANO_NETWORK}/block-producing/config.json ]; then
@@ -38,6 +39,7 @@ function init_relay_cfg {
         echo "Initializing ${CARDANO_NETWORK}/relay/topology.json"
         cp /cardano-node/config-templates/${CARDANO_NETWORK}/relay/topology.json /config/${CARDANO_NETWORK}/relay/topology.json
         sed -i "s/\[PRODUCING_IP\]/${PRODUCING_IP}/g" /config/${CARDANO_NETWORK}/relay/topology.json
+        sed -i "s/\[PRODUCING_PORT\]/${PRODUCING_PORT}/g" /config/${CARDANO_NETWORK}/relay/topology.json
     fi
 
     if [ ! -f /config/relay/config.json ]; then
@@ -69,7 +71,7 @@ function start_producing {
         --database-path /config/${CARDANO_NETWORK}/block-producing/db \
         --socket-path ${PRODUCING_SOCKET} \
         --host-addr ${PRODUCING_IP} \
-        --port 3000 \
+        --port ${PRODUCING_PORT} \
         --config /config/${CARDANO_NETWORK}/block-producing/config.json
 }
 
@@ -82,7 +84,7 @@ function start_relay {
         --database-path /config/${CARDANO_NETWORK}/relay/db \
         --socket-path ${RELAY_SOCKET} \
         --host-addr ${RELAY_IP} \
-        --port 3001 \
+        --port ${RELAY_PORT} \
         --config /config/${CARDANO_NETWORK}/relay/config.json
 }
 

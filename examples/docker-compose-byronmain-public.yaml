@@ -1,0 +1,28 @@
+# This one uses network=host, so ports will not have to be published, and EKG and Prometheus will be accessible from the host.
+# The default ports are changed, so the containers can run alongside containers running on the pioneer network.
+version: "3"
+services:
+  cardano-byron-producing: # block-producing node
+    image: droe/cardano-node:pioneer
+    container_name: cardano-byron-producing
+    network_mode: host
+    volumes:
+      - $PWD/active_config/:/config
+    environment:
+      - CARDANO_NETWORK=byron-main
+      - PRODUCING_PORT=3010
+      - RELAY_PORT=3011
+    command: --producing
+    restart: unless-stopped
+  cardano-byron-relay: # relay node
+    image: droe/cardano-node:pioneer
+    container_name: cardano-byron-relay
+    network_mode: host
+    volumes:
+      - $PWD/active_config/:/config
+    environment:
+      - CARDANO_NETWORK=byron-main
+      - PRODUCING_PORT=3010
+      - RELAY_PORT=3011
+    command: --relay
+    restart: unless-stopped

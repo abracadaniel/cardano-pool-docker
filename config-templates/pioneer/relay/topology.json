@@ -2,7 +2,7 @@
   "Producers": [
     {
       "addr": "[PRODUCING_IP]",
-      "port": 3000,
+      "port": [PRODUCING_PORT],
       "valency": 1
     },
     {

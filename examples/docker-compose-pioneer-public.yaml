@@ -1,8 +1,8 @@
 version: "3"
 services:
-  cardano-producing: # block-producing node
+  cardano-pioneer-producing: # block-producing node
     image: droe/cardano-node:pioneer
-    container_name: cardano-producing
+    container_name: cardano-pioneer-producing
     volumes:
       - $PWD/active_config/:/config
     environment:
@@ -13,9 +13,9 @@ services:
       - 12788:12788 # For EKG
       - 12798:12798 # For Prometheus
     restart: unless-stopped
-  cardano-relay: # relay node
+  cardano-pioneer-relay: # relay node
     image: droe/cardano-node:pioneer
-    container_name: cardano-relay
+    container_name: cardano-pioneer-relay
     volumes:
       - $PWD/active_config/:/config
     environment:

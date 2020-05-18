@@ -1,13 +1,13 @@
 # Running a Cardano Node
 
-From the official [Installing and Running a Node](https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/build.md) tutorial from IOHK.
-The container download and build the [cardano-node](https://github.com/input-output-hk/cardano-node.git) using the pioneer tag.
+From the official [Node setup](https://github.com/input-output-hk/cardano-tutorials/tree/master/node-setup) and [pioneers-testnet](https://github.com/input-output-hk/cardano-tutorials/tree/master/pioneers-testnet) tutorials from IOHK.
+The container downloads and builds the [cardano-node](https://github.com/input-output-hk/cardano-node.git) using the pioneer tag.
 It can start either a block-producing node or a relay node, or both, and connect to the cardano network. By default it will connect to the Pioneer dev network, you can run on other networks using the CARDANO_NETWORK environment variable, See the [Environment variables](#environment) section.
 
 ## Usage
 
-Here are some example snippets to help you get started creating a container.
-You will need to open to ports 3000 for the block-producing node and 3001 for the relay node.
+Here are some example snippets to help you get started creating a some nodes.
+You will, by default, need to open to ports 3000 for the block-producing node and 3001 for the relay node.
 
 
 ### docker
@@ -131,7 +131,9 @@ You can pass the following environment variables to the container.
 | Variable | Function |
 | :-- | -- |
 | RELAY_IP | IP-address of relay node. Defaults to public IP |
-| PRODUCING_IP | IP-address of block-producing node. Defaults to public ip |
+| RELAY_PORT | Port of the relay node. Defaults to 3001. |
+| PRODUCING_IP | IP-address of block-producing node. Defaults to public IP. |
+| PRODUCING_PORT| Port of the block-producing node. Defaults to 3000. |
 | CARDANO_NETWORK | Which network to run the nodes on. Defaults to pioneer. (Use byron-main for byron-main network). |
 
 ### Supported Networks
@@ -144,6 +146,7 @@ Use the CARDANO_NETWORK environment variable to change this.
 
 ## Ports
 The ports to publish for the different nodes. For the nodes to work properly you need to forward the ports 3000 and 3001 to the instances running the nodes.
+If you changes the ports using the environment variables, you will of course have to publish those ports.
 
 | Port | Function |
 | :-- | -- |
@@ -191,3 +194,4 @@ docker build -t droe/cardano-node:pioneer .
 
 The EKG and Prometheus monitoring services are currently not available, because they are locked to only allow access from localhost ip address (127.0.0.1).
 This could be solved by adding a nginx reverse proxy, with authentication to the stack.
+If you want to be able to access the EKG and Prometheus from outside the containers, you will currently have to run the containers on the `host` network.
