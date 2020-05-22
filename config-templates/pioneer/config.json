@@ -1,12 +1,12 @@
 {
   "ApplicationName": "cardano-sl",
-  "ApplicationVersion": 1,
-  "GenesisFile": "/config/main/genesis.json",
+  "ApplicationVersion": 0,
+  "GenesisFile": "",
   "LastKnownBlockVersion-Alt": 0,
   "LastKnownBlockVersion-Major": 0,
-  "LastKnownBlockVersion-Minor": 2,
-  "Protocol": "RealPBFT",
-  "RequiresNetworkMagic": "RequiresNoMagic",
+  "LastKnownBlockVersion-Minor": 0,
+  "Protocol": "TPraos",
+  "RequiresNetworkMagic": "RequiresMagic",
   "TraceBlockFetchClient": false,
   "TraceBlockFetchDecisions": false,
   "TraceBlockFetchProtocol": false,
@@ -51,7 +51,7 @@
     "127.0.0.1",
     12798
   ],
-  "minSeverity": "Notice",
+  "minSeverity": "Debug",
   "options": {
     "mapBackends": {
       "cardano.node-metrics": [
@@ -160,4 +160,3 @@
     }
   ]
 }
-

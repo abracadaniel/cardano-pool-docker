@@ -1,9 +1,0 @@
-{
-  "Producers": [
-    {
-      "addr": "[RELAY_IP]",
-      "port": [RELAY_PORT],
-      "valency": 1
-    }
-  ]
-}

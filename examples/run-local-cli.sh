@@ -2,14 +2,17 @@
 
 docker run -it --rm \
     --network=host \
-    -p 3000:3000 \
-    -p 3001:3001 \
-    -p 12788:12788 \
-    -p 12789:12789 \
-    -p 12798:12798 \
-    -p 12799:12799 \
-    -e RELAY_IP='127.0.0.1' \
-    -e PRODUCING_IP='127.0.0.1' \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -u) \
+    -e NODE_PORT="3000" \
+    -e NODE_NAME="block-producing" \
+    -e NODE_TOPOLOGY="127.0.0.1:3001/1" \
+    -e NODE_RELAY="False" \
+    -e CARDANO_NETWORK="main" \
+    -e EKG_PORT="12788" \
+    -e PROMETHEUS_PORT="12798" \
+    -e RESOLVE_HOSTNAMES="True" \
+    -e REPLACE_EXISTING_CONFIG="True" \
     -v $PWD/active_config/:/config/ \
     --entrypoint=/bin/bash \
     arrakis/cardano-node:pioneer

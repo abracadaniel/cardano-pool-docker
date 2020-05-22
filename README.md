@@ -12,131 +12,147 @@ You will, by default, need to open to ports 3000 for the block-producing node an
 
 ### docker
 
-#### block-producing node on pioneer dev net
+### Create shared network for containers
+
+This creates a docker network for the containers, so the containers can communicate with eachother.
+
+```
+docker network create cardano-pioneer
+```
+
+
+#### block-producing node on pioneer net
 
 ```
 docker run -dit --rm \
+    --network=cardano-pioneer \
     -p 3000:3000 \
     -p 12788:12788 \
     -p 12798:12798 \
-    -v </path/to/config>/:/config/ \
-    -e CARDANO_NETWORK=pioneer \
-    --name cardano-producing \
-    cardano-node --producing # See arguments section for more options
+    -e PUID=$(id -u) \
+    -e PGID=$(id -u) \
+    -e NODE_PORT="3000" \
+    -e NODE_NAME="block-producing" \
+    -e NODE_TOPOLOGY="cardano-pioneer-relay:3001/1" \
+    -e NODE_RELAY="False" \
+    -e CARDANO_NETWORK="pioneer" \
+    -e EKG_PORT="12788" \
+    -e PROMETHEUS_PORT="12798" \
+    -e RESOLVE_HOSTNAMES="True" \
+    -e REPLACE_EXISTING_CONFIG="True" \
+    -v </path/to/config>:/config/ \
+    --name cardano-pioneer-producing \
+    arrakis/cardano-node:pioneer --start
 ```
 
 
-#### relay node on pioneer dev net
+#### relay node on pioneer net
 
 ```
 docker run -dit --rm \
+    --network=cardano-pioneer \
     -p 3001:3001 \
     -p 12789:12789 \
     -p 12799:12799 \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -u) \
+    -e NODE_PORT="3001" \
+    -e NODE_NAME="relay" \
+    -e NODE_TOPOLOGY="cardano-pioneer-producing:3000/1" \
+    -e NODE_RELAY="True" \
+    -e CARDANO_NETWORK="pioneer" \
+    -e EKG_PORT="12789" \
+    -e PROMETHEUS_PORT="12799" \
+    -e RESOLVE_HOSTNAMES="True" \
+    -e REPLACE_EXISTING_CONFIG="True" \
     -v </path/to/config>:/config/ \
-    -e CARDANO_NETWORK=pioneer \
-    --name cardano-relay \
-    cardano-node --relay # See arguments section for more options
+    --name cardano-pioneer-relay \
+    arrakis/cardano-node:pioneer --start
 ```
 
 
-### docker-compose on pioneer dev net
-
-This will run both a block-producing node and a relay node on the pioneer dev net.
-```
-version: "3"
-services:
-  cardano-prod: # block-producing node
-    image: arrakis/cardano-node:pioneer
-    container_name: cardano-prod
-    volumes:
-      - </path/to/config>:/config
-    environment:
-      - CARDANO_NETWORK=pioneer
-    command: --producing # See arguments section for more options
-    ports:
-      - 3000:3000
-      - 12788:12788 # For EKG
-      - 12798:12798 # For Prometheus
-    restart: unless-stopped
-  cardano-relay: # relay node
-    image: arrakis/cardano-node:pioneer
-    container_name: cardano-relay
-    volumes:
-      - </path/to/config>:/config
-    environment:
-      - CARDANO_NETWORK=pioneer
-    command: --relay # See arguments section for more options
-    ports:
-      - 3001:3001
-      - 12789:12789 # For EKG
-      - 12799:12799 # For Prometheus
-    restart: unless-stopped
-```
-
-
-### docker-compose on pioneer byron main net
+### docker-compose on pioneer mainnet
 
 This will run both a block-producing node and a relay node on the byron main net.
+
 ```
 version: "3"
 services:
-  cardano-prod: # block-producing node
+  cardano-byron-producing: # block-producing node
     image: arrakis/cardano-node:pioneer
-    container_name: cardano-prod
+    container_name: cardano-main-producing
+    network_mode: host
     volumes:
-      - </path/to/config>:/config
+      - $PWD/active_config/:/config
     environment:
-      - CARDANO_NETWORK=byron-main
-    command: --producing
-    ports:
-      - 3000:3000
-      - 12788:12788 # For EKG
-      - 12798:12798 # For Prometheus
+      - PUID=1000
+      - PGID=1001
+      - NODE_PORT=3000
+      - NODE_NAME=block-producing
+      - NODE_TOPOLOGY=127.0.0.1:3001/1
+      - NODE_RELAY=False
+      - CARDANO_NETWORK=main
+      - EKG_PORT=12788
+      - PROMETHEUS_PORT=12798
+      - RESOLVE_HOSTNAMES=True
+      - REPLACE_EXISTING_CONFIG=True
+    command: --start
     restart: unless-stopped
-  cardano-relay: # relay node
+  cardano-byron-relay: # relay node
     image: arrakis/cardano-node:pioneer
-    container_name: cardano-relay
+    container_name: cardano-main-relay
+    network_mode: host
     volumes:
-      - </path/to/config>:/config
+      - $PWD/active_config/:/config
     environment:
-      - CARDANO_NETWORK=byron-main
-    command: --relay
-    ports:
-      - 3001:3001
-      - 12789:12789 # For EKG
-      - 12799:12799 # For Prometheus
+      - PUID=1000
+      - PGID=1001
+      - NODE_PORT=3001
+      - NODE_NAME=relay
+      - NODE_TOPOLOGY=127.0.0.1:3000/1
+      - NODE_RELAY=True
+      - CARDANO_NETWORK=main
+      - EKG_PORT=12789
+      - PROMETHEUS_PORT=12799
+      - RESOLVE_HOSTNAMES=True
+      - REPLACE_EXISTING_CONFIG=True
+    command: --start
     restart: unless-stopped
 ```
 
 
 ## Arguments
+
 You can pass the following arguments to the start up script.
 
 | Argument | Function |
 | :-- | -- |
-| --resolve_docker_hostname | Resolve docker hostname to IP address in docker network. |
-| --resetproducing | Reset block-producing node config. |
-| --resetrelay | Reset relay node config. |
-| --resetgenesis | Reset genesis config. |
-| --producing | start block-producing node. |
-| --relay | start relay node. |
-| --both | start both block-producing and relay nodes. |
+| --start | Start node. |
+| --update | Update the node software. |
 | --generate_key | Generate key and address. |
 | --help | see this message. |
 
 ## Environment variables <a id="environment"></a>
+
 You can pass the following environment variables to the container.
 
 | Variable | Function |
 | :-- | -- |
-| RELAY_IP | IP-address of relay node. Defaults to public IP |
-| RELAY_PORT | Port of the relay node. Defaults to 3001. |
-| PRODUCING_IP | IP-address of block-producing node. Defaults to public IP. |
-| PRODUCING_PORT| Port of the block-producing node. Defaults to 3000. |
-| CARDANO_NETWORK | Which network to run the nodes on. Defaults to pioneer. (Use byron-main for byron-main network). |
+| PUID | User ID of user running the container |
+| PGID | Group ID of user running the container |
+| NODE_PORT | Port of node. Default: 3000. |
+| NODE_NAME | Name of node. Default: node1. |
+| NODE_TOPOLOGY | Topology of the node. Should be comma separated for each individual node to add, on the form: <ip>:<port>/<valency>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1. |
+| NODE_RELAY | Set to True if default IOHK relay should be added to the network topology. Default: False. |
+| CARDANO_NETWORK | Carano network to use (main, test, pioneer). Default: main. |
+| EKG_PORT | Port of EKG monitoring. Default: 12788. |
+| PROMETHEUS_PORT | Port of Prometheus monitoring. Default: 12798. |
+| RESOLVE_HOSTNAMES | Resolve topology hostnames to IP-addresses. Default: False. |
+| REPLACE_EXISTING_CONFIG | Reset and replace existing configs. Default: False. |
+
 
 ### Supported Networks
+
 Use the CARDANO_NETWORK environment variable to change this.
 The latest supported networks can be found at [https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/index.html](https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/index.html)
 
@@ -144,19 +160,19 @@ The latest supported networks can be found at [https://hydra.iohk.io/job/Cardano
 | :-- | -- |
 | Pioneer dev net | pioneer |
 | byron-mainnet | main |
+| testnet | test |
+
 
 ## Ports
+
 The ports to publish for the different nodes. For the nodes to work properly you need to forward the ports 3000 and 3001 to the instances running the nodes.
 If you changes the ports using the environment variables, you will of course have to publish those ports.
 
 | Port | Function |
 | :-- | -- |
 | 3000 | Default port block-producing node. |
-| 12788 | EKG monitor port for block-producing. |
-| 12798 | Prometheus monitoring port for block-producing node. |
-| 3001  | Default port for relay node. |
-| 12789 | EKG monitoring port for relay node. |
-| 12799 | Prometheus monitoring port for relay node. |
+| 12788 | Default port for EKG monitoring. |
+| 12798 | Default port for Prometheus monitoring. |
 
 
 ## Volumes
@@ -174,10 +190,9 @@ Use these example scripts to see how the nodes can be started.
 | :-- | -- |
 | build.sh | Build the container locally.|
 | run-local-cli.sh | Run interactive cli shell. | 
-| run-local-main.sh | Run nodes on byron-main net, and connect them using their local docker network addresses. |
-| run-local-pioneer.sh | Run nodes on pioneer-dev net, and connect them using their local docker network addresses. |
-| docker-compose-byronmain-public.yaml | Run nodes using docker-compose on byron-main net, and connect them using their public IP addresses. |
-| docker-compose-pioneer-public.yaml | Run nodes using docker-compose on pioneer-dev net, and connect them using their public IP addresses. |
+| run-local-main.sh | Run nodes on mainnet, and connect them using their local docker network addresses. |
+| docker-compose-main.yaml | Run nodes using docker-compose on mainnet. |
+| docker-compose-pioneer.yaml | Run nodes using docker-compose on pioneer-dev net. |
 | stop-local.sh | Stops locally running containers. |
 
 

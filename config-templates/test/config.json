@@ -1,11 +1,11 @@
 {
   "ApplicationName": "cardano-sl",
   "ApplicationVersion": 0,
-  "GenesisFile": "/config/pioneer/genesis.json",
+  "GenesisFile": "",
   "LastKnownBlockVersion-Alt": 0,
-  "LastKnownBlockVersion-Major": 0,
+  "LastKnownBlockVersion-Major": 1,
   "LastKnownBlockVersion-Minor": 0,
-  "Protocol": "TPraos",
+  "Protocol": "RealPBFT",
   "RequiresNetworkMagic": "RequiresMagic",
   "TraceBlockFetchClient": false,
   "TraceBlockFetchDecisions": false,
@@ -51,7 +51,7 @@
     "127.0.0.1",
     12798
   ],
-  "minSeverity": "Debug",
+  "minSeverity": "Notice",
   "options": {
     "mapBackends": {
       "cardano.node-metrics": [
@@ -74,6 +74,9 @@
           "kind": "UserDefinedBK",
           "name": "LiveViewBackend"
         }
+      ],
+      "cardano.node.Forge.metrics": [
+        "EKGViewBK"
       ],
       "cardano.node.metrics": [
         "EKGViewBK",

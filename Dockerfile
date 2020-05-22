@@ -38,21 +38,27 @@ RUN cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-1.11.0/x/carda
     && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-1.11.0/x/cardano-cli/build/cardano-cli/cardano-cli /usr/bin
 #RUN cabal install cardano-node cardano-cli
 
+# Install python
+RUN apt-get install -y python3 python3-pip
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
-EXPOSE 3000-3001 12788-12789 12798-12799
+EXPOSE 3000 12788 12798
 
 # Expose volume
 VOLUME /config/
 
 # ENV variables
-ENV PRODUCING_IP="" \
-    PRODUCING_PORT="3000" \
-    RELAY_IP="" \
-    RELAY_PORT="3001" \
-    CARDANO_NETWORK="pioneer" \
-    CARDANO_NODE_SOCKET_PATH="/default.socket"
+ENV NODE_PORT="3000" \
+    NODE_NAME="node1" \
+    NODE_TOPOLOGY="" \
+    NODE_RELAY="False" \
+    CARDANO_NETWORK="main" \
+    EKG_PORT="12788" \
+    PROMETHEUS_PORT="12798" \
+    RESOLVE_HOSTNAMES="False" \
+    REPLACE_EXISTING_CONFIG="False" \
+    CARDANO_SOCKET_PATH="/node.socket"
 
 # Add config
 ADD config-templates/ /config-templates/
@@ -61,6 +67,5 @@ RUN mkdir -p /config/
 # Add scripts
 ADD scripts/ /scripts/
 RUN chmod -R +x /scripts/
-
 
 ENTRYPOINT ["/scripts/start-cardano-node.sh"]
