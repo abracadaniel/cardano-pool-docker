@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/node-op-cert.md
+
+# Init vars
+source /scripts/init-node-vars
+
+# Enter staking directory
+cd ${NODE_PATH}/staking/
+
+# Create cold key
+echo "Warning: Creating cold key. This should normally NOT be created or kept on the server."
+cardano-cli shelley node key-gen \
+    --cold-verification-key-file node.vkey \
+    --cold-signing-key-file node.skey \
+    --operational-certificate-issue-counter node.counter
+
+# Create Verifiable Random Function key
+cardano-cli shelley node key-gen-VRF \
+    --verification-key-file vrf.vkey \
+    --signing-key-file vrf.skey
+
+# Create Key Evolving Signature key
+cardano-cli shelley node key-gen-KES \
+    --verification-key-file kes001.vkey \
+    --signing-key-file kes001.skey
+
+# Create an operational node certificate
+cardano-cli shelley node issue-op-cert \
+    --kes-verification-key-file kes001.vkey \
+    --cold-signing-key-file node.skey \
+    --operational-certificate-issue-counter node.counter \
+    --kes-period 0 \
+    --out-file node001.cert

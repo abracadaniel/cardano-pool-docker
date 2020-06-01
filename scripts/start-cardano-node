@@ -1,29 +1,18 @@
 #!/bin/bash
 
+# Init cardano-node variables
+source /scripts/init-node-vars
+
 # Handle IP addresses
 export PUBLIC_IP=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
-export NODE_PATH=/config/${CARDANO_NETWORK}/${NODE_NAME}/
-
-function generate_key {
-    UNIXTIME=$(date +%s%N)
-    RAND=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-    ADDRESS=${RAND}_${UNIXTIME}
-    mkdir -p /config/${CARDANO_NETWORK}/keys/${ADDRESS}
-
-    (cd /config/${CARDANO_NETWORK}/keys/${ADDRESS} \
-        && cardano-cli shelley address key-gen \
-            --verification-key-file payment.vkey \
-            --signing-key-file payment.skey \
-        && ADDR=$(cardano-cli shelley address build-enterprise \
-            --payment-verification-key-file payment.vkey) \
-        && echo ${ADDR} > ${ADDR}.addr)
-}
 
 function help {
     echo "Arguments:"
-    echo "--start                       Start node"
+    echo "--start                       Start node."
+    echo "--cli                         Start command-line interface."
     echo "--update                      Update the node software."
-    echo "--generate_key                Generate key and address."
+    echo "--init_config                 Initialize config."
+    echo "--generate_address            Generate key and address."
     echo "--help                        Display this message."
     echo "Environment variables:"
     echo "NODE_PORT                     Port of node. Default: 3000."
@@ -47,7 +36,6 @@ function node_info {
     echo "Node path: ${NODE_PATH}"
     echo "EKG Port: ${EKG_PORT}"
     echo "Prometheus Port: ${PROMETHEUS_PORT}"
-
 }
 
 function init_config {
@@ -61,7 +49,7 @@ function start_node {
     cardano-node run \
         --topology ${NODE_PATH}/topology.json \
         --database-path ${NODE_PATH}/db \
-        --socket-path ${NODE_PATH}/node.socket \
+        --socket-path ${CARDANO_NODE_SOCKET_PATH} \
         --host-addr 0.0.0.0 \
         --port ${NODE_PORT} \
         --config ${NODE_PATH}/config.json
@@ -75,10 +63,17 @@ case $i in
         break
     ;;
     --update)
-        /scripts/update-cardano-node.sh
+        /scripts/update-cardano-node
     ;;
-    --generate_key)
-        generate_key
+    --cli)
+        /bin/bash
+        break
+    ;;
+    --init_config)
+        init_config
+    ;;
+    --generate_address)
+        /scripts/generate_address
     ;;
     --start)
         START_NODE=1

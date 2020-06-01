@@ -1,4 +1,5 @@
 import os
+import shutil
 import re
 import argparse
 import json
@@ -45,10 +46,12 @@ def init_args():
 
     # Init network specific paths
     args.CONFIG_TEMPLATES_PATH = os.path.join(CONFIG_TEMPLATES_ROOT_PATH, args.network)
-    args.CONFIG_OUTPUT_PATH = os.path.join(CONFIG_OUTPUT_ROOT_PATH, args.network, args.name)
+    CONFIG_NAME = args.network+'-'+args.name
+    args.CONFIG_OUTPUT_PATH = os.path.join(CONFIG_OUTPUT_ROOT_PATH, CONFIG_NAME)
     args.GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'genesis.json')
     args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology.json')
     args.CONFIG_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'config.json')
+    args.VARS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'VARS')
 
     return args
 
@@ -137,6 +140,14 @@ def init_config(args):
         data['hasPrometheus'] = ['127.0.0.1', args.prometheus_port]
         save_json(args.CONFIG_PATH, data)
 
+def init_vars(args):
+    INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'VARS')
+
+    if not os.path.exists(args.VARS_PATH) or args.replace_existing:
+        print('Generating new VARS %s from template %s' % (args.VARS_PATH, INPUT_PATH))
+
+        # Just copy it
+        shutil.copy(INPUT_PATH, args.VARS_PATH)
 
 if __name__ == '__main__':
     args = init_args()
@@ -145,3 +156,4 @@ if __name__ == '__main__':
     init_genesis(args)
     init_topology(args)
     init_config(args)
+    init_vars(args)

@@ -35,7 +35,7 @@ WORKDIR /cardano-node/
 RUN cabal install cardano-node cardano-cli
 
 # Install python
-RUN apt-get install -y python3 python3-pip
+RUN apt-get install -y python3 python3-pip vim
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
@@ -59,7 +59,8 @@ RUN mkdir -p /config/
 VOLUME /config/
 
 # Add scripts
+RUN echo "source /scripts/init-node-vars" >> /root/.bashrc
 ADD scripts/ /scripts/
 RUN chmod -R +x /scripts/
 
-ENTRYPOINT ["/scripts/start-cardano-node.sh"]
+ENTRYPOINT ["/scripts/start-cardano-node"]

@@ -28,7 +28,7 @@ docker run -dit --rm \
     -e PROMETHEUS_PORT="12798" \
     -e RESOLVE_HOSTNAMES="True" \
     -e REPLACE_EXISTING_CONFIG="True" \
-    -v $PWD/active_config/:/config/ \
+    -v $PWD/active_config/main/block-producing:/config/ \
     --name cardano-main-producing \
     arrakis/cardano-node:pioneer --start
 
@@ -41,7 +41,7 @@ docker run -dit --rm \
     -e PUID=$(id -u) \
     -e PGID=$(id -u) \
     -e NODE_PORT="3001" \
-    -e NODE_NAME="relay" \
+    -e NODE_NAME="relay1" \
     -e NODE_TOPOLOGY="cardano-main-producing:3000/1" \
     -e NODE_RELAY="True" \
     -e CARDANO_NETWORK="main" \
@@ -49,7 +49,7 @@ docker run -dit --rm \
     -e PROMETHEUS_PORT="12799" \
     -e RESOLVE_HOSTNAMES="True" \
     -e REPLACE_EXISTING_CONFIG="True" \
-    -v $PWD/active_config/:/config/ \
+    -v $PWD/active_config/main/relay1:/config/ \
     --name cardano-main-relay \
     arrakis/cardano-node:pioneer --start
 

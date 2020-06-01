@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Init node vars
+source /scripts/init-node-vars
+
+if [ ! -d "${NODE_PATH}/staking" ]; then
+    mkdir -p ${NODE_PATH}/staking
+    cd ${NODE_PATH}/staking
+
+    # Generate key & address
+    ## Generate Payment key pair
+    cardano-cli shelley address key-gen \
+        --verification-key-file payment.vkey \
+        --signing-key-file payment.skey
+
+    ## Generate Stake key pair
+    cardano-cli shelley stake-address key-gen \
+        --verification-key-file stake.vkey \
+        --signing-key-file stake.skey
+
+    ## Generate Payment address
+    cardano-cli shelley address build \
+        --payment-verification-key-file payment.vkey \
+        --stake-verification-key-file stake.vkey \
+        --out-file payment.addr
+
+    PAYMENT_ADDR=$(cat payment.addr)
+    echo "Generated staking address: ${PAYMENT_ADDR}"
+else
+    PAYMENT_ADDR=$(cat ${NODE_PATH}/staking/payment.addr)
+    echo "Stake address already exists: ${PAYMENT_ADDR}."
+fi

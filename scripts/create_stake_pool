@@ -1,0 +1,16 @@
+#!/bin/bash
+
+/scripts/generate_stake_address
+/scripts/register_stake_address
+/scripts/create_node_certificate
+
+
+# cardano-node run \
+#     --topology ... \
+#     --database-path ... \
+#     --socket-path ... \
+#     --port ...
+#     --config ... \
+#     --shelley-kes-key kes001.skey \
+#     --shelley-vrf-key vrf.skey \
+#     --shelley-operational-certificate node001.cert

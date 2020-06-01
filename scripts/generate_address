@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Init node vars
+source /scripts/init-node-vars
+
+# Init random tmp folder
+RAND=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)$(date +%s%N)
+mkdir -p /tmp/${RAND}
+
+# Generate key & address
+(
+    cd /tmp/${RAND}/ && \
+    # Generate Payment key pair
+    cardano-cli shelley address key-gen \
+        --verification-key-file payment.vkey \
+        --signing-key-file payment.skey && \
+    # Generate Stake key pair
+    cardano-cli shelley stake-address key-gen \
+        --verification-key-file stake.vkey \
+        --signing-key-file stake.skey && \
+    # Generate Payment address
+    cardano-cli shelley address build \
+        --payment-verification-key-file payment.vkey \
+        --stake-verification-key-file stake.vkey \
+        --out-file payment.addr
+)
+PAYMENT_ADDR=$(cat /tmp/${RAND}/payment.addr)
+mkdir -p ${NODE_PATH}/addresses/
+mv /tmp/${RAND}/ ${NODE_PATH}/addresses/${PAYMENT_ADDR}
+
+echo "Generated address in ${NODE_PATH}/addresses/${PAYMENT_ADDR}"

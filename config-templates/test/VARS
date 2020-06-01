@@ -1,0 +1,1 @@
+export NETWORK_ARGUMENT="--testnet-magic 42"

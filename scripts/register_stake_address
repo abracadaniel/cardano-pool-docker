@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/tx.md
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/staking-key.md
+
+# Init vars
+source /scripts/init-node-vars
+TTL=250000
+
+# Enter staking directory
+cd ${NODE_PATH}/staking/
+
+# Create an address registration certificate
+if [ ! -f "${NODE_PATH}/staking/stake.cert" ]; then
+    cardano-cli shelley stake-address registration-certificate \
+        --staking-verification-key-file stake.vkey \
+        --out-file stake.cert
+fi
+
+# Generate protocol
+cardano-cli shelley query protocol-parameters \
+    ${NETWORK_ARGUMENT} \
+    --out-file protocol.json
+
+# Get key-deposit
+KEY_DEPOSIT=$(cat protocol.json  | grep keyDeposit | tr ' ' '\n' | tail -1 | sed 's/,//g')
+
+## Get the fee
+FEE=$(cardano-cli shelley transaction calculate-min-fee \
+    --tx-in-count 1 \
+    --tx-out-count 1 \
+    --ttl ${TTL} \
+    ${NETWORK_ARGUMENT} \
+    --signing-key-file payment.skey \
+    --signing-key-file stake.skey \
+    --certificate-file stake.cert \
+    --protocol-params-file protocol.json | tr ' ' '\n' | tail -1)
+TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
+
+echo "Fee is: ${FEE}"
+echo "Key-Deposit: ${KEY_DEPOSIT}"
+echo "Total Price is: ${TOTAL_PRICE}"
+
+# Find UTXO in address with enough lovelace to do the transaction
+ADDRESS=$(cat payment.addr)
+UTXOS=$(cardano-cli shelley query utxo \
+    ${NETWORK_ARGUMENT} \
+    --address ${ADDRESS} | tail -n +3)
+while IFS= read -r line ; do
+    arr=(${line})
+    LOVELACE=${arr[2]}
+
+    if [ -n "${LOVELACE}" ]; then
+        if [ "$LOVELACE" -ge "$TOTAL_PRICE" ]; then
+            UTXO=${arr[0]}
+            TXIX=${arr[1]}
+            break
+        fi
+    fi
+done <<< "${UTXOS}"
+
+if [ -z "${UTXO}" ]; then
+    echo "You do not have enough ADA in your address ${ADDRESS} to register the key"
+    exit
+fi
+
+# Create transaction
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
+echo "Creating transaction"
+echo "UTXO: ${UTXO}"
+echo "Lovelace Holding: ${LOVELACE}"
+echo "Lovelace after transaction: ${REMAINING_AFTER_TX}"
+cardano-cli shelley transaction build-raw \
+    --tx-in ${UTXO}\#${TXIX} \
+    --tx-out $(cat payment.addr)+${REMAINING_AFTER_TX} \
+    --ttl ${TTL} \
+    --fee ${FEE} \
+    --out-file tx.raw \
+    --certificate-file stake.cert
+
+# Sign transaction
+cardano-cli shelley transaction sign \
+    --tx-body-file tx.raw \
+    --signing-key-file payment.skey \
+    --signing-key-file stake.skey \
+    ${NETWORK_ARGUMENT} \
+    --out-file tx.signed
+
+# Submit
+cardano-cli shelley transaction submit \
+    --tx-file tx.signed \
+    ${NETWORK_ARGUMENT}

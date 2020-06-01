@@ -12,7 +12,6 @@ docker run -it --rm \
     -e EKG_PORT="12788" \
     -e PROMETHEUS_PORT="12798" \
     -e RESOLVE_HOSTNAMES="True" \
-    -e REPLACE_EXISTING_CONFIG="True" \
-    -v $PWD/active_config/:/config/ \
-    --entrypoint=/bin/bash \
-    arrakis/cardano-node:pioneer
+    -e REPLACE_EXISTING_CONFIG="False" \
+    -v $PWD/active_config/main/block-producing:/config/ \
+    arrakis/cardano-node:pioneer --cli

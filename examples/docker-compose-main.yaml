@@ -2,11 +2,11 @@
 version: "3"
 services:
   cardano-byron-producing: # block-producing node
-    image: arrakis/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer2
     container_name: cardano-main-producing
     network_mode: host
     volumes:
-      - $PWD/active_config/:/config
+      - $PWD/active_config/main/block-producing:/config
     environment:
       - PUID=1000
       - PGID=1001
@@ -22,16 +22,16 @@ services:
     command: --start
     restart: unless-stopped
   cardano-byron-relay: # relay node
-    image: arrakis/cardano-node:pioneer
+    image: arrakis/cardano-node:pioneer2
     container_name: cardano-main-relay
     network_mode: host
     volumes:
-      - $PWD/active_config/:/config
+      - $PWD/active_config/main/relay1:/config
     environment:
       - PUID=1000
       - PGID=1001
       - NODE_PORT=3001
-      - NODE_NAME=relay
+      - NODE_NAME=relay1
       - NODE_TOPOLOGY=127.0.0.1:3000/1
       - NODE_RELAY=True
       - CARDANO_NETWORK=main

@@ -7,7 +7,7 @@ services:
     container_name: cardano-pioneer-producing
     network_mode: host
     volumes:
-      - $PWD/active_config/:/config
+      - $PWD/active_config/pioneer/block-producing:/config
     environment:
       - PUID=1000
       - PGID=1001
@@ -26,12 +26,12 @@ services:
     container_name: cardano-pioneer-relay
     network_mode: host
     volumes:
-      - $PWD/active_config/:/config
+      - $PWD/active_config/pioneer/relay1:/config
     environment:
       - PUID=1000
       - PGID=1001
       - NODE_PORT=3011
-      - NODE_NAME=relay
+      - NODE_NAME=relay1
       - NODE_TOPOLOGY=127.0.0.1:3010/1
       - NODE_RELAY=True
       - CARDANO_NETWORK=pioneer

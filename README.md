@@ -10,6 +10,9 @@ Here are some example snippets to help you get started creating a some nodes.
 You will, by default, need to open the port 3000 for the block-producing node and 3001 for the relay node.
 
 
+## Block producers and Relays
+For information on block producer and relay nodes read the official documentation [Block producers and Relays](https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/topology.md)
+
 ### docker
 
 ### Create shared network for containers
