@@ -103,23 +103,24 @@ def parse_topology_str(s) -> list:
 def init_topology(args):
     """Initializes the topology file"""
 
-    INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology.json')
+    if args.relay:
+        INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology-relay.json')
+    else:
+        INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology.json')
 
     if not os.path.exists(args.TOPOLOGY_PATH) or args.replace_existing:
         print('Generating new topology %s from template %s' % (args.TOPOLOGY_PATH, INPUT_PATH))
         print('Topology: ', args.topology)
 
+        # Load template file
         data = load_json(INPUT_PATH)
 
         # Parse topology string
         topology = parse_topology_str(args.topology)
 
         # Add default IOHK relay
-        if args.relay:
-            relay = load_json(os.path.join(args.CONFIG_TEMPLATES_PATH, 'relay.json'))
-            topology.append(relay)
 
-        data['Producers'] = topology
+        data['Producers'] = data['Producers']+topology
         save_json(args.TOPOLOGY_PATH, data)
 
 def init_config(args):

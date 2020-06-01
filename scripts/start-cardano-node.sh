@@ -2,7 +2,6 @@
 
 # Handle IP addresses
 export PUBLIC_IP=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
-export SOCKET=${CARDANO_SOCKET_PATH}
 export NODE_PATH=/config/${CARDANO_NETWORK}/${NODE_NAME}/
 
 function generate_key {
@@ -62,7 +61,8 @@ function start_node {
     cardano-node run \
         --topology ${NODE_PATH}/topology.json \
         --database-path ${NODE_PATH}/db \
-        --socket-path ${SOCKET} \
+        --socket-path ${NODE_PATH}/node.socket \
+        --host-addr 0.0.0.0 \
         --port ${NODE_PORT} \
         --config ${NODE_PATH}/config.json
 }

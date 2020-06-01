@@ -1,10 +1,13 @@
 #!/bin/bash
 
+NODE_PATH=/config/${CARDANO_NETWORK}/${NODE_NAME}/
 CARDANO_BRANCH=$(cat /CARDANO_BRANCH)
+
+(cd ~/.cabal/bin/ && rm -rf cardano-node cardano-cli chairman) # Remove old files
+rm -rf ${NODE_PATH}/db/ # Remove database
+
 (cd /cardano-node \
     && git fetch --all --tags \
     && git tag \
     && git checkout ${CARDANO_BRANCH} \
-    && cabal build all \
-    && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-1.11.0/x/cardano-node/build/cardano-node/cardano-node /usr/bin \
-    && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-1.11.0/x/cardano-cli/build/cardano-cli/cardano-cli /usr/bin)
+    && cabal install cardano-node cardano-cli) 

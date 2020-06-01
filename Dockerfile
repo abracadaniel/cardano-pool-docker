@@ -23,7 +23,6 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && make install && cd ..
 
 # Install cardano-node
-#ENV derp2=''
 ARG CARDANO_BRANCH
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH
@@ -33,10 +32,7 @@ RUN git clone https://github.com/input-output-hk/cardano-node.git \
     && git fetch --all --tags \
     && git checkout $CARDANO_BRANCH
 WORKDIR /cardano-node/
-RUN cabal build all
-RUN cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-1.11.0/x/cardano-node/build/cardano-node/cardano-node /usr/bin \
-    && cp -p dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-1.11.0/x/cardano-cli/build/cardano-cli/cardano-cli /usr/bin
-#RUN cabal install cardano-node cardano-cli
+RUN cabal install cardano-node cardano-cli
 
 # Install python
 RUN apt-get install -y python3 python3-pip
@@ -44,9 +40,6 @@ RUN apt-get install -y python3 python3-pip
 # Expose ports
 ## cardano-node, EKG, Prometheus
 EXPOSE 3000 12788 12798
-
-# Expose volume
-VOLUME /config/
 
 # ENV variables
 ENV NODE_PORT="3000" \
@@ -58,11 +51,12 @@ ENV NODE_PORT="3000" \
     PROMETHEUS_PORT="12798" \
     RESOLVE_HOSTNAMES="False" \
     REPLACE_EXISTING_CONFIG="False" \
-    CARDANO_SOCKET_PATH="/node.socket"
+    PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}"
 
 # Add config
 ADD config-templates/ /config-templates/
 RUN mkdir -p /config/
+VOLUME /config/
 
 # Add scripts
 ADD scripts/ /scripts/

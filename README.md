@@ -7,7 +7,7 @@ It can start either a block-producing node or a relay node, or both, and connect
 ## Usage
 
 Here are some example snippets to help you get started creating a some nodes.
-You will, by default, need to open to ports 3000 for the block-producing node and 3001 for the relay node.
+You will, by default, need to open the port 3000 for the block-producing node and 3001 for the relay node.
 
 
 ### docker
@@ -132,6 +132,7 @@ You can pass the following arguments to the start up script.
 | --generate_key | Generate key and address. |
 | --help | see this message. |
 
+
 ## Environment variables <a id="environment"></a>
 
 You can pass the following environment variables to the container.
@@ -202,7 +203,7 @@ If you want to make local modifications to these images for development purposes
 ```
 git clone https://github.com/abracadaniel/cardano-node-docker.git
 cd cardano-node-docker
-docker build -t droe/cardano-node:pioneer .
+docker build -t arrakis/cardano-node:pioneer .
 ```
 
 
