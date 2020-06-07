@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# This is an example on how to start 2 nodes on the mainnet. 1 block-producing and 1 relay.
+# This is an example on how to start 1 relay node on the pioneer network
 #
 
 # Start relay node
