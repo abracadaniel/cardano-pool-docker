@@ -1,4 +1,4 @@
-from debian:stable-slim
+FROM debian:stable-slim
 LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
