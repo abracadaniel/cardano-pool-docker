@@ -53,8 +53,12 @@ ENV NODE_PORT="3000" \
     REPLACE_EXISTING_CONFIG="False" \
     PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}"
 
+ADD scripts/ /scripts/
+RUN chmod -R +x /scripts/
+
 COPY ff-config.json .
 COPY ff-genesis.json .
 COPY ff-topology.json .
 # CMD [ "cardano-node", "run", "--topology", "ff-topology.json", "--socket-path", "db/node.socket", "--config", "ff-config.json", "--database-path", " db", "--port", "3001" ]
+
 ENTRYPOINT [ "scripts/start-cardano-node" ]
