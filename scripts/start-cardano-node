@@ -28,65 +28,93 @@ function help {
     exit
 }
 
-function node_info {
-    echo "Running cardano-node on ${CARDANO_NETWORK} network"
-    echo "Node name: ${NODE_NAME}"
-    echo "Public IP: ${PUBLIC_IP}"
-    echo "Node Port: ${NODE_PORT}"
-    echo "Node path: ${NODE_PATH}"
-    echo "EKG Port: ${EKG_PORT}"
-    echo "Prometheus Port: ${PROMETHEUS_PORT}"
-}
+# function node_info {
+#     echo "Running cardano-node on ${CARDANO_NETWORK} network"
+#     echo "Node name: ${NODE_NAME}"
+#     echo "Public IP: ${PUBLIC_IP}"
+#     echo "Node Port: ${NODE_PORT}"
+#     echo "Node path: ${NODE_PATH}"
+#     echo "EKG Port: ${EKG_PORT}"
+#     echo "Prometheus Port: ${PROMETHEUS_PORT}"
+# }
 
-function init_config {
-    python3 /scripts/init_config.py
-}
+# function init_config {
+#     python3 /scripts/init_config.py
+# }
+
+# function start_node {
+#     echo "Starting cardano-node"
+#     node_info
+#     init_config
+#     cardano-node run \
+#         --topology ${NODE_PATH}/topology.json \
+#         --database-path ${NODE_PATH}/db \
+#         --socket-path ${CARDANO_NODE_SOCKET_PATH} \
+#         --host-addr 0.0.0.0 \
+#         --port ${NODE_PORT} \
+#         --config ${NODE_PATH}/config.json
+# }
+
+# for i in "$@"
+# do
+# case $i in
+#     --help)
+#         help
+#         break
+#     ;;
+#     --update)
+#         /scripts/update-cardano-node
+#     ;;
+#     --cli)
+#         /bin/bash
+#         break
+#     ;;
+#     --init_config)
+#         init_config
+#     ;;
+#     --generate_address)
+#         /scripts/generate_address
+#     ;;
+#     --start)
+#         START_NODE=1
+#     ;;
+#     *)
+#         break
+#     ;;
+# esac
+# done
+# if [ -z "$1" ]; then
+#     help
+# fi
+
+# if [ -n "$START_NODE" ]; then
+#     start_node
+# fi
+
+# CMD [
+# "cardano-node",
+# "run",
+# "--topology",
+# "ff-topology.json",
+# "--socket-path",
+# "db/node.socket",
+# "--config",
+# "ff-config.json",
+# "--database-path",
+# "db",
+# "--port",
+# "3001"
+# ]
 
 function start_node {
-    echo "Starting cardano-node"
-    node_info
-    init_config
+    network_prefix="$1"
+    echo "Starting cardano-node with network prefix: $network_prefix"
     cardano-node run \
-        --topology ${NODE_PATH}/topology.json \
-        --database-path ${NODE_PATH}/db \
-        --socket-path ${CARDANO_NODE_SOCKET_PATH} \
-        --host-addr 0.0.0.0 \
-        --port ${NODE_PORT} \
-        --config ${NODE_PATH}/config.json
+        --topology ${network_prefix}.json \
+        --database-path db \
+        --socket-path db/node.socket \
+        --port 3001 \
+        --config ${network_prefix}.json
 }
 
-for i in "$@"
-do
-case $i in
-    --help)
-        help
-        break
-    ;;
-    --update)
-        /scripts/update-cardano-node
-    ;;
-    --cli)
-        /bin/bash
-        break
-    ;;
-    --init_config)
-        init_config
-    ;;
-    --generate_address)
-        /scripts/generate_address
-    ;;
-    --start)
-        START_NODE=1
-    ;;
-    *)
-        break
-    ;;
-esac
-done
-if [ -z "$1" ]; then
-    help
-fi
-
-if [ -n "$START_NODE" ]; then
-    start_node
-fi
+start_node
