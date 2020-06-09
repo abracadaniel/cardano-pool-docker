@@ -23,7 +23,7 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && make install && cd ..
 
 # Install cardano-node
-ARG CARDANO_BRANCH
+ARG CARDANO_BRANCH="tags/pioneer-wave2"
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH
 RUN mkdir -p /cardano-node/
@@ -35,7 +35,7 @@ WORKDIR /cardano-node/
 RUN cabal install cardano-node cardano-cli
 
 # Install python
-RUN apt-get install -y python3 python3-pip vim
+# RUN apt-get install -y python3 python3-pip vim
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
@@ -53,14 +53,8 @@ ENV NODE_PORT="3000" \
     REPLACE_EXISTING_CONFIG="False" \
     PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}"
 
-# Add config
-ADD config-templates/ /config-templates/
-RUN mkdir -p /config/
-VOLUME /config/
+COPY ff-config.json .
+COPY ff-genesis.json .
+COPY ff-topology.json .
+CMD [ "cardano-node", "run", "--topology", "ff-topology.json", "--socket-path", "db/node.socket", "--config", "ff-config.json", "--database-path", " db", "--port", "3001" ]
 
-# Add scripts
-RUN echo "source /scripts/init-node-vars" >> /root/.bashrc
-ADD scripts/ /scripts/
-RUN chmod -R +x /scripts/
-
-ENTRYPOINT ["/scripts/start-cardano-node"]
