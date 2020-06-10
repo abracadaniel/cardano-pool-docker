@@ -1,11 +1,11 @@
 {
   "ApplicationName": "cardano-sl",
   "ApplicationVersion": 0,
-  "GenesisFile": "ff-genesis.json",
+  "GenesisFile": "testnet-genesis.json",
   "LastKnownBlockVersion-Alt": 0,
-  "LastKnownBlockVersion-Major": 0,
+  "LastKnownBlockVersion-Major": 1,
   "LastKnownBlockVersion-Minor": 0,
-  "Protocol": "TPraos",
+  "Protocol": "RealPBFT",
   "RequiresNetworkMagic": "RequiresMagic",
   "TraceBlockFetchClient": false,
   "TraceBlockFetchDecisions": false,
@@ -37,21 +37,11 @@
   "TurnOnLogMetrics": true,
   "TurnOnLogging": true,
   "ViewMode": "SimpleView",
-  "defaultBackends": [
-    "KatipBK"
-  ],
-  "defaultScribes": [
-    [
-      "StdoutSK",
-      "stdout"
-    ]
-  ],
+  "defaultBackends": ["KatipBK"],
+  "defaultScribes": [["StdoutSK", "stdout"]],
   "hasEKG": 12788,
-  "hasPrometheus": [
-    "127.0.0.1",
-    12798
-  ],
-  "minSeverity": "Debug",
+  "hasPrometheus": ["127.0.0.1", 12798],
+  "minSeverity": "Info",
   "options": {
     "mapBackends": {
       "cardano.node-metrics": [
@@ -75,9 +65,7 @@
           "name": "LiveViewBackend"
         }
       ],
-      "cardano.node.Forge.metrics": [
-        "EKGViewBK"
-      ],
+      "cardano.node.Forge.metrics": ["EKGViewBK"],
       "cardano.node.metrics": [
         "EKGViewBK",
         {
@@ -129,10 +117,7 @@
         "subtrace": "FilterTrace"
       },
       "benchmark": {
-        "contents": [
-          "GhcRtsStats",
-          "MonotonicClock"
-        ],
+        "contents": ["GhcRtsStats", "MonotonicClock"],
         "subtrace": "ObservableTrace"
       },
       "cardano.epoch-validation.utxo-stats": {
@@ -151,9 +136,7 @@
     "rpLogLimitBytes": 5000000,
     "rpMaxAgeHours": 24
   },
-  "setupBackends": [
-    "KatipBK"
-  ],
+  "setupBackends": ["KatipBK"],
   "setupScribes": [
     {
       "scFormat": "ScText",

@@ -23,10 +23,9 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && make install && cd ..
 
 # Install cardano-node
-ARG CARDANO_BRANCH="tags/pioneer-wave2"
+ARG CARDANO_BRANCH="tags/1.13.0"
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH
-RUN mkdir -p /cardano-node/
 RUN git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --tags \
@@ -42,23 +41,22 @@ RUN cabal install cardano-node cardano-cli
 EXPOSE 3000 12788 12798
 
 # ENV variables
-ENV NODE_PORT="3000" \
-    NODE_NAME="node1" \
-    NODE_TOPOLOGY="" \
-    NODE_RELAY="False" \
-    CARDANO_NETWORK="main" \
-    EKG_PORT="12788" \
-    PROMETHEUS_PORT="12798" \
-    RESOLVE_HOSTNAMES="False" \
-    REPLACE_EXISTING_CONFIG="False" \
-    PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}"
+# ENV NODE_PORT="3000" \
+#     NODE_NAME="node1" \
+#     NODE_TOPOLOGY="" \
+#     NODE_RELAY="False" \
+#     CARDANO_NETWORK="main" \
+#     EKG_PORT="12788" \
+#     PROMETHEUS_PORT="12798" \
+#     RESOLVE_HOSTNAMES="False" \
+#     REPLACE_EXISTING_CONFIG="False" \
+ENV PATH="/root/.cabal/bin/:/new-scripts/:/cardano-node/scripts/:${PATH}"
 
-ADD scripts/ /scripts/
-RUN chmod -R +x /scripts/
+ADD new-scripts/ /new-scripts/
+RUN chmod -R +x /new-scripts/
+COPY start-cardano-node.sh /start-cardano-node.sh
+RUN chmod +x /start-cardano-node.sh
 
-COPY ff-config.json .
-COPY ff-genesis.json .
-COPY ff-topology.json .
-# CMD [ "cardano-node", "run", "--topology", "ff-topology.json", "--socket-path", "db/node.socket", "--config", "ff-config.json", "--database-path", " db", "--port", "3001" ]
-
-ENTRYPOINT [ "scripts/start-cardano-node" ]
+# CMD [ "cardano-node", "run", "--topology", "ff-topology.json", "--socket-path", "db/node.socket", "--config", "ff-config.json", "--database-path", " db" ]
+# CMD [ "ls", "/" ]
+ENTRYPOINT [ "/start-cardano-node.sh" ]
