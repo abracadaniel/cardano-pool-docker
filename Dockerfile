@@ -38,7 +38,8 @@ RUN cabal install cardano-node cardano-cli
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
-EXPOSE 3000 12788 12798
+# EXPOSE 3000 12788 12798
+EXPOSE 3000 3001 8080 8081
 
 # ENV variables
 # ENV NODE_PORT="3000" \

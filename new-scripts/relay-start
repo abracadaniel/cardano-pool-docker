@@ -1,14 +1,14 @@
 #!/bin/bash
 
-topology="./new-scripts/relay-configs/ff-topology.json"
-config="./new-scripts/relay-configs/ff-config.json"
+topology="/new-scripts/relay-configs/ff-topology.json"
+config="/new-scripts/relay-configs/ff-config.json"
 
 echo "topology: $topology"
 echo "config: $config"
 
  cardano-node run \
      --topology $topology \
-     --database-path block-producing/db \
+     --database-path db \
      --socket-path /db/node.socket \
      --host-addr 127.0.0.1 \
      --port 8081 \
