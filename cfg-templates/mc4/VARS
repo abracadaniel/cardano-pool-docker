@@ -1,0 +1,2 @@
+export NETWORK_ARGUMENT="--testnet-magic 42"
+export HARDFORK_EPOCH=1

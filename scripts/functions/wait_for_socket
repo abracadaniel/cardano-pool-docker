@@ -1,0 +1,17 @@
+function wait_for_socket {
+    source /scripts/init_node_vars
+
+    while true; do
+        OUT=$(get_slot)
+        if [[ -z "$OUT" ]]; then
+            echo ""
+            echo "Waiting for cardano-node to read the blockchain and start the socket. May take a while."
+            echo "Trying again..."
+
+            sleep 10
+        else
+            echo "Socket to node is functional."
+            break
+        fi
+    done
+}

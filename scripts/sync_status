@@ -1,0 +1,26 @@
+#!/bin/bash
+# Thanks to Smaug from https://t.me/CardanoStakePoolWorkgroup
+
+source /scripts/functions/wait_for_socket
+wait_for_socket
+
+GENESIS=${NODE_PATH}/shelley-genesis.json
+BYRON_GENESIS=${NODE_PATH}/byron-genesis.json
+#HARDFORK_EPOCH=208 # Defines the epoch which the hardfork happened in. 1 for MC4, 208 for mainnet. This is set in the network VARS file
+NETWORK="${NETWORK_ARGUMENT}" # replace by --mainnet for mainnet
+
+epoch_length=$(jq -r .epochLength $GENESIS)
+slot_length=$(jq -r .slotLength $GENESIS)
+byron_slot_length=$(( $(jq -r .blockVersionData.slotDuration $BYRON_GENESIS) / 1000 ))
+byron_epoch_length=$(( $(jq -r .protocolConsts.k $BYRON_GENESIS) * 10 ))
+
+byron_start=$(jq -r .startTime $BYRON_GENESIS)
+byron_end=$((byron_start + HARDFORK_EPOCH * byron_epoch_length * byron_slot_length))
+byron_slots=$(($HARDFORK_EPOCH * byron_epoch_length))
+now=$(date +'%s')
+
+expected_slot=$((byron_slots + (now - byron_end) / slot_length))
+current_slot=$(cardano-cli shelley query tip $NETWORK | jq -r '.slotNo')
+percent=$(echo -e "scale=2\n$current_slot * 100 / $expected_slot" | bc)
+
+echo "slot ${current_slot}/${expected_slot} ${percent}%"

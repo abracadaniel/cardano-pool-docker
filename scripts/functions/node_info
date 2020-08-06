@@ -1,0 +1,20 @@
+function node_info {
+    STAKEPOOL=$1
+    if [ -n "$STAKEPOOL" ]; then
+        POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+        source ${NODE_PATH}/staking/POOL_VARS
+        source /scripts/functions/stakepool_info
+        
+        echo "Pool ID: ${POOL_ID}"
+        stakepool_info
+    fi
+    echo "Node name: ${NODE_NAME}"
+    echo "Network: ${CARDANO_NETWORK}"
+    echo "Host Address: ${HOST_ADDR}"
+    echo "Public IP: ${PUBLIC_IP}"
+    echo "Node Port: ${NODE_PORT}"
+    echo "Node path: ${NODE_PATH}"
+    echo "EKG Port: ${EKG_PORT}"
+    echo "Prometheus Port: ${PROMETHEUS_PORT}"
+
+}

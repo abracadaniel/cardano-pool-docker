@@ -1,0 +1,12 @@
+function wait_for_pool_registration {
+    source /scripts/functions/check_pool_registration
+
+    echo "Waiting for the blockchain to register the pool."
+    while true; do
+        if [ -n "$(check_pool_registration)" ]; then  
+            break
+        fi
+        echo "Blockchain has not yet registered the pool. Waiting.."
+        sleep 10
+    done
+}

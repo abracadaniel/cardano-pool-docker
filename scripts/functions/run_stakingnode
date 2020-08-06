@@ -1,0 +1,21 @@
+function run_stakingnode {
+    source /scripts/init_node_vars
+    source /scripts/functions/node_info
+
+    echo "Starting cardano-node as a staking node."
+    node_info 1
+
+    # Running in loop allows for restarting without restarting the container
+    while true; do 
+        cardano-node run \
+            --topology ${NODE_PATH}/topology.json \
+            --database-path ${NODE_PATH}/db \
+            --socket-path ${CARDANO_NODE_SOCKET_PATH} \
+            --host-addr ${HOST_ADDR} \
+            --port ${NODE_PORT} \
+            --config ${NODE_PATH}/config.json \
+            --shelley-kes-key ${NODE_PATH}/staking/pool-keys/kes.skey \
+            --shelley-vrf-key ${NODE_PATH}/staking/pool-keys/vrf.skey \
+            --shelley-operational-certificate ${NODE_PATH}/staking/pool-keys/node.cert
+    done
+}

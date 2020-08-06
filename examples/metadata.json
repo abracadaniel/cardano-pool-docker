@@ -1,0 +1,6 @@
+{
+    "name": "Example Pool",
+    "description": "Cardano stakepool example",
+    "ticker": "TEST",
+    "homepage": "https://github.com/abracadaniel/cardano-node-docker"
+}

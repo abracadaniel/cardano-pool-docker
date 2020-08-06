@@ -1,0 +1,3 @@
+function init_config {
+    python3 /scripts/init_config.py
+}

@@ -1,0 +1,16 @@
+function status {
+    source /scripts/functions/wait_for_socket
+    source /scripts/functions/check_kes_status
+
+    wait_for_socket
+    
+    while true; do
+        KES_SLOTS_LEFT=$(check_kes_status)
+        echo "Your KES and VRF keys and node certificate has to be renewed in ${KES_SLOTS_LEFT} slots."
+        echo "To renew run \`generate_operational_certificate\`"
+        echo ""
+        echo "Node sync status:"
+        sync_status
+        sleep 60
+    done
+}

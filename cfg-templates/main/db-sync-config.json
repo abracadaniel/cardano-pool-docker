@@ -1,0 +1,121 @@
+{
+  "ByronGenesisFile": "/nix/store/3678ccikas3q16jcqcghwviqsd5k9wjx-mainnet-byron-genesis.json",
+  "ByronGenesisHash": "5f20df933584822601f9e3f8c024eb5eb252fe8cefb24d1317dc3d432e940ebb",
+  "EnableLogMetrics": false,
+  "EnableLogging": true,
+  "NetworkName": "mainnet",
+  "Protocol": "Cardano",
+  "RequiresNetworkMagic": "RequiresNoMagic",
+  "ShelleyGenesisFile": "/nix/store/hxgam7f415s8b0j6c3qwakgkzd0pr5h4-mainnet-shelley-genesis.json",
+  "ShelleyGenesisHash": "1a3be38bcbb7911969283716ad7aa550250226b76a61fc51cc9a9a35d9276d81",
+  "defaultBackends": [
+    "KatipBK"
+  ],
+  "defaultScribes": [
+    [
+      "StdoutSK",
+      "stdout"
+    ]
+  ],
+  "hasPrometheus": [
+    "127.0.0.1",
+    12698
+  ],
+  "minSeverity": "Info",
+  "options": {
+    "cfokey": {
+      "value": "Release-1.0.0"
+    },
+    "mapBackends": {},
+    "mapSeverity": {
+      "db-sync-node": "Info",
+      "db-sync-node.Mux": "Error",
+      "db-sync-node.Subscription": "Error"
+    },
+    "mapSubtrace": {
+      "#ekgview": {
+        "contents": [
+          [
+            {
+              "contents": "cardano.epoch-validation.benchmark",
+              "tag": "Contains"
+            },
+            [
+              {
+                "contents": ".monoclock.basic.",
+                "tag": "Contains"
+              }
+            ]
+          ],
+          [
+            {
+              "contents": "cardano.epoch-validation.benchmark",
+              "tag": "Contains"
+            },
+            [
+              {
+                "contents": "diff.RTS.cpuNs.timed.",
+                "tag": "Contains"
+              }
+            ]
+          ],
+          [
+            {
+              "contents": "#ekgview.#aggregation.cardano.epoch-validation.benchmark",
+              "tag": "StartsWith"
+            },
+            [
+              {
+                "contents": "diff.RTS.gcNum.timed.",
+                "tag": "Contains"
+              }
+            ]
+          ]
+        ],
+        "subtrace": "FilterTrace"
+      },
+      "#messagecounters.aggregation": {
+        "subtrace": "NoTrace"
+      },
+      "#messagecounters.ekgview": {
+        "subtrace": "NoTrace"
+      },
+      "#messagecounters.katip": {
+        "subtrace": "NoTrace"
+      },
+      "#messagecounters.monitoring": {
+        "subtrace": "NoTrace"
+      },
+      "#messagecounters.switchboard": {
+        "subtrace": "NoTrace"
+      },
+      "benchmark": {
+        "contents": [
+          "GhcRtsStats",
+          "MonotonicClock"
+        ],
+        "subtrace": "ObservableTrace"
+      },
+      "cardano.epoch-validation.utxo-stats": {
+        "subtrace": "NoTrace"
+      }
+    }
+  },
+  "rotation": {
+    "rpKeepFilesNum": 10,
+    "rpLogLimitBytes": 5000000,
+    "rpMaxAgeHours": 24
+  },
+  "setupBackends": [
+    "AggregationBK",
+    "KatipBK"
+  ],
+  "setupScribes": [
+    {
+      "scFormat": "ScText",
+      "scKind": "StdoutSK",
+      "scName": "stdout",
+      "scRotation": null
+    }
+  ]
+}

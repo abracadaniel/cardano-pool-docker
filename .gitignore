@@ -1,0 +1,6 @@
+examples/config/
+private/
+/rsync.sh
+*.pyc
+__pycache__
+.fuse_hidden0005794700000002

@@ -1,0 +1,17 @@
+function run_node {
+    source /scripts/init_node_vars
+    source /scripts/functions/node_info
+
+    # Running in loop allows for restarting without restarting the container
+    while true; do
+        echo "Starting cardano-node"
+        node_info
+        cardano-node run \
+            --topology ${NODE_PATH}/topology.json \
+            --database-path ${NODE_PATH}/db \
+            --socket-path ${CARDANO_NODE_SOCKET_PATH} \
+            --host-addr ${HOST_ADDR} \
+            --port ${NODE_PORT} \
+            --config ${NODE_PATH}/config.json
+    done
+}

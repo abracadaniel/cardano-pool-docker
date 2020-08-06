@@ -1,0 +1,12 @@
+function wait_for_address_registration {
+    source /scripts/functions/check_address_registration
+
+    echo "Waiting for the blockchain to register the address."
+    while true; do
+        if [ -n "$(check_address_registration)" ]; then  
+            break
+        fi
+        echo "Blockchain has not yet registered the address. Waiting.."
+        sleep 10
+    done
+}

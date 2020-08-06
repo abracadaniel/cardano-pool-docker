@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source /scripts/functions/get_public_ip
+
+cd ${NODE_PATH}
+
+echo "Updating topology.json using topology updater."
+
+NWMAGIC=$(jq -r .networkMagic < ${NODE_PATH}/shelley-genesis.json)
+CUSTOM_PEERS=$(python3 /scripts/get_topology_str.py)
+
+curl -s -o ${NODE_PATH}/topology.auto.json "https://api.clio.one/htopology/v1/fetch/?max=14&magic=${NWMAGIC}&customPeers=${CUSTOM_PEERS}"
+PRODUCERS=$(jq -r .Producers < ${NODE_PATH}/topology.auto.json)
+
+if [[ "${PRODUCERS}" == "null" ]]; then
+    echo "Update of topology.json was unsuccessful."
+    cat ${NODE_PATH}/topology.auto.json
+
+    read
+else
+    # Replace topology
+    mv ${NODE_PATH}/topology.json ${NODE_PATH}/topology.backup.json
+    mv -f ${NODE_PATH}/topology.auto.json ${NODE_PATH}/topology.json
+
+    # Restart cardano-node
+    echo "Restarting cardano-node"
+    killall -9 cardano-node
+
+    read
+fi

@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# Include functions
+source /scripts/init_node_vars
+source /scripts/functions/run_node
+source /scripts/functions/get_public_ip
+source /scripts/functions/init_config
+
+# Init config on first run
+if [[ ! -f "${NODE_PATH}/VARS" || "$REPLACE_EXISTING_CONFIG" == "True" ]]; then
+    init_config
+fi
+
+# Handle IP addresses
+export PUBLIC_IP=$(get_public_ip)
+if [ -z "${HOST_ADDR}" ]; then
+    export HOST_ADDR=${PUBLIC_IP}
+fi
+
+function help {
+    echo "Arguments:"
+    echo "--start                       Start node."
+    echo "--staking                     Start as a staking node (Requires the \`--start\` argument)"
+    echo "--cli                         Start command-line interface."
+    echo "--update                      Update the node software."
+    echo "--init_config                 Initialize config."
+    echo "--help                        Display this message."
+    echo "Environment variables:"
+    echo "NODE_PORT                     Port of node. Default: 3000."
+    echo "NODE_NAME                     Name of node. Default: node1."
+    echo "NODE_TOPOLOGY                 Topology of the node. Should be comma separated for each individual node to add, on the form: <ip>:<port>/<valency>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1."
+    echo "NODE_RELAY                    Set to True if default IOHK relay should be added to the network topology. Default: False."
+    echo "METADATA_URL                  URL for file containing stake pool metadata information. See \`examples/metadata.json\` for examle. The file be uploaded to an URL accessible to public."
+    echo "PUBLIC_RELAY_IP               Public IP address of Relay node."
+    echo "                              Values:"
+    echo "                              <Any IP address>"
+    echo "                              TOPOLOGY: Use first entry of the topology."
+    echo "                              PUBLIC: Use public IP of node."
+    echo "                              Default: TOPOLOGY."
+    echo "HOST_ADDR                     Set cardano-node host address. Defaults to public IP address."
+    echo "CARDANO_NETWORK               Carano network to use (main, test, pioneer). Default: main."
+    echo "EKG_PORT                      Port of EKG monitoring. Default: 12788."
+    echo "PROMETHEUS_HOST               Host of Prometheus monitoring. Default: 127.0.0.1."
+    echo "PROMETHEUS_PORT               Port of Prometheus monitoring. Default: 12798."
+    echo "RESOLVE_HOSTNAMES             Resolve topology hostnames to IP-addresses. Default: False."
+    echo "REPLACE_EXISTING_CONFIG       Reset and replace existing configs. Default: False."
+    echo "CREATE_STAKEPOOL              Initializes Stake Pool keys, addresses and certificates, and sends them to the blockchain, when starting as a stakepool, if it is not already initialized. Default: False"
+    echo "POOL_PLEDGE                   Pledge (lovelace). Default: 100000000000"
+    echo "POOL_COST                     Operational costs per epoch (lovelace). Default: 10000000000"
+    echo "POOL_MARGIN                   Operator margin. Default: 0.05"
+    echo "AUTO_TOPOLOGY                 Automatically update topology.json. Default: True"
+
+    exit
+}
+
+for i in "$@"
+do
+case $i in
+    --help)
+        help
+        break
+    ;;
+    --update)
+        /scripts/update-cardano-node
+    ;;
+    --cli)
+        /bin/bash
+        break
+    ;;
+    --init_config)
+        init_config
+    ;;
+    --start)
+        START_NODE=1
+    ;;
+    --staking)
+       STAKING=1
+    ;;
+    *)
+        break
+    ;;
+esac
+done
+if [ -z "$1" ]; then
+    help
+fi
+
+if [ -n "$START_NODE" ]; then
+    if [ -n "$STAKING" ]; then
+        # Start as staking node
+        /scripts/start-stakenode
+    else
+        # Update topology
+        if [[ "${AUTO_TOPOLOGY}" == "True" ]]; then
+            tmux \
+                new-session  "source /scripts/functions/run_node; run_node" \; \
+                split-window "source /scripts/functions/auto_topology_start; auto_topology_start" \; \
+                select-layout even-horizontal
+        else
+            run_node
+        fi
+    fi
+fi

@@ -1,0 +1,19 @@
+function stakepool_info {
+    if [ -f "${NODE_PATH}/staking/metadata.json" ]; then
+        METADATA=${NODE_PATH}/staking/metadata.json
+        
+        POOL_NAME=$(jq -r '.name' $METADATA)
+        POOL_DESCRIPTION=$(jq -r '.description' $METADATA)
+        POOL_TICKER=$(jq -r '.ticker' $METADATA)
+        POOL_HOMEPAGE=$(jq -r '.homepage' $METADATA)
+
+        echo "Pool Name: ${POOL_NAME}"
+        echo "Pool Description: ${POOL_DESCRIPTION}"
+        echo "Pool Ticker: ${POOL_TICKER}"
+        echo "Pool Homepage: ${POOL_HOMEPAGE}"
+    fi
+
+    echo "Pool Pledge: ${POOL_PLEDGE}"
+    echo "Pool Cost: ${POOL_COST}"
+    echo "Pool Margin: ${POOL_MARGIN}"
+}

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+GENESIS=${NODE_PATH}/shelley-genesis.json
+
+startTimeGenesis=$(cat ${GENESIS} | jq -r .systemStart)
+startTimeSec=$(date --date=${startTimeGenesis} +%s)     #in seconds (UTC)
+currentTimeSec=$(date -u +%s)                           #in seconds (UTC)
+epochLength=$(cat ${GENESIS} | jq -r .epochLength)
+currentEPOCH=$(( (${currentTimeSec}-${startTimeSec}) / ${epochLength} ))  #returns a integer number, we like that
+echo ${currentEPOCH}

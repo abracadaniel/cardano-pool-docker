@@ -1,0 +1,15 @@
+function wait_for_slot {
+    WAIT_FOR_SLOT=$1
+
+    echo "Waiting for slot ${WAIT_FOR_SLOT}"
+    while true; do
+        SLOT=$(get_slot)
+
+        if [ "$SLOT" -ge "$WAIT_FOR_SLOT" ]; then
+            echo "Reached slot ${WAIT_FOR_SLOT}"
+            break
+        fi
+        echo "Slot: ${SLOT}/${WAIT_FOR_SLOT}"
+        sleep 10
+    done
+}

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+source /scripts/functions/get_public_ip
+source /scripts/functions/wait_for_sync
+
+echo "Submitting IP to topology updater."
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.98
+fi
+
+cd ${NODE_PATH}
+mkdir -p ${NODE_PATH}/logs/
+
+NWMAGIC=$(jq -r .networkMagic < ${NODE_PATH}/shelley-genesis.json)
+TIMESTAMP=$(date +%s)
+BLOCK=$(get_block)
+PUBLIC_IP=$(get_public_ip)
+
+echo "Network Magic: ${NWMAGIC}"
+echo "Block: ${BLOCK}"
+echo "IP: ${PUBLIC_IP}"
+echo "Port: ${NODE_PORT}"
+echo "Submitting..."
+
+curl -s "https://api.clio.one/htopology/v1/?port=${NODE_PORT}&blockNo=${BLOCK}&valency=1&magic=${NWMAGIC}${T_HOSTNAME}" | tee -a ${NODE_PATH}/logs/update_topology.${TIMESTAMP}.json

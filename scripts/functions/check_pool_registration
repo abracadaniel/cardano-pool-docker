@@ -1,0 +1,6 @@
+function check_pool_registration {
+    source /scripts/init_node_vars
+    
+    POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+    cardano-cli shelley query ledger-state ${NETWORK_ARGUMENT} | grep publicKey | grep ${POOL_ID}
+}

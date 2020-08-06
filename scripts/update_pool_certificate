@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Init vars
+source /scripts/init_node_vars
+source /scripts/functions/get_public_ip
+source /scripts/functions/stakepool_info
+
+# Enter staking directory
+cd ${NODE_PATH}/staking/
+
+echo ""
+echo "Generate registration certificates"
+
+# Check for required files
+if [ ! -f "stake.vkey" ]; then
+    echo "Missing required staking/stake.vkey. You need to run \`generate_stake_address\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "cold-keys/cold.vkey" ]; then
+    echo "Missing required staking/cold-keys/cold.vkey. You need to run \`generate_operational_certificate\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "pool-keys/vrf.vkey" ]; then
+    echo "Missing required staking/pool-keys/vrf.vkey. You need to run \`generate_operational_certificate\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ -n "$MISSING_FILES" ]; then
+    exit
+fi
+
+if [ -z "$METADATA_URL" ]; then
+    echo "Missing METADATA_URL You need to upload your metadata.json file at pass the URL to the METADATA_URL variable."
+    exit
+fi
+
+TIMESTAMP=$(date +%s)
+if [ -f "pool.cert" ]; then
+    echo "backing up pool.cert."
+    cp pool.cert pool.${TIMESTAMP}.cert
+fi
+
+# 1. Create a JSON file with your pool's metadata
+echo "Getting metadata file from ${METADATA_URL}"
+wget -O metadata.json ${METADATA_URL}
+
+# 2. get hash of file
+echo "Getting hash of metadata.json"
+METADATA_HASH=$(cardano-cli shelley stake-pool metadata-hash --pool-metadata-file metadata.json)
+echo "metadata.json hash: ${METADATA_HASH}"
+
+# 3. Generate Stake pool registration certificate
+if [ "${PUBLIC_RELAY_IP}" == "TOPOLOGY" ]; then
+    PUBLIC_RELAY_IP=$(jq -r ".Producers[0].addr" ${NODE_PATH}/topology.json)
+fi
+if [ "${PUBLIC_RELAY_IP}" == "PUBLIC" ]; then
+    PUBLIC_RELAY_IP=$(get_public_ip)
+fi
+PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+
+echo "Generating pool.cert"
+stakepool_info
+echo "Public Relay IP: ${PUBLIC_RELAY_IP}"
+echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
+
+cardano-cli shelley stake-pool registration-certificate \
+    --cold-verification-key-file cold-keys/cold.vkey \
+    --vrf-verification-key-file pool-keys/vrf.vkey \
+    --pool-pledge ${POOL_PLEDGE} \
+    --pool-cost ${POOL_COST} \
+    --pool-margin ${POOL_MARGIN} \
+    --pool-reward-account-verification-key-file stake.vkey \
+    --pool-owner-stake-verification-key-file stake.vkey \
+    --pool-relay-port ${PUBLIC_RELAY_PORT} \
+    --pool-relay-ipv4 ${PUBLIC_RELAY_IP} \
+    --metadata-url ${METADATA_URL} \
+    --metadata-hash ${METADATA_HASH} \
+    ${NETWORK_ARGUMENT} \
+    --out-file pool.cert \
+&& echo "Generated pool.cert"
+echo "export POOL_PLEDGE=${POOL_PLEDGE}" > POOL_VARS
+echo "export POOL_COST=${POOL_COST}" >> POOL_VARS
+echo "export POOL_MARGIN=${POOL_MARGIN}" >> POOL_VARS
+echo ""

@@ -1,0 +1,13 @@
+function check_kes_status {
+    source /scripts/init_node_vars
+    source ${NODE_PATH}/staking/pool-keys/KESPERIOD
+
+    if [ -n "$EXPIRESLOT" ]; then
+        CURRENT_SLOT=$(get_slot)
+        SLOTS_LEFT=$(expr ${EXPIRESLOT} - ${CURRENT_SLOT})
+    
+        echo ${SLOTS_LEFT}
+    else
+        echo 0
+    fi
+}

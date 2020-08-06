@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# We run a syncing node which is needed to query the blockchain for creating and registering the keys and certificates.
+# Then synchronously we start creating and registering the keys.
+mkdir -p ${NODE_PATH}/logs/
+
+tmux \
+  new-session  "source /scripts/functions/run_node; run_node" \; \
+  split-window "source /scripts/functions/create_and_register_pool; create_and_register_pool |& tee ${NODE_PATH}/logs/create_stakepool.$(date +%s).log" \; \
+  select-layout even-horizontal

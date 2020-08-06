@@ -1,0 +1,29 @@
+function create_and_register_pool {
+    source /scripts/init_node_vars
+    source /scripts/functions/wait_for_socket
+
+    echo "Creating Stake Pool addresses, keys and certificates, and submits to the blockchain."
+
+    # If staking/ directory exists create a backup
+    if [ -d "${NODE_PATH}/staking/" ]; then
+        TIMESTAMP=$(date +%s)
+        BACKUPNAME="staking.${TIMESTAMP}.tar.gz"
+        echo "staking directory already exists."
+        echo "Backing up to ${BACKUPNAME}."
+        tar -zcvf ${NODE_PATH}/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
+    fi
+
+    # Wait for database to load (wait_for_socket in loop)
+    wait_for_socket
+
+    # Start creation
+    generate_stake_address
+    register_stake_address
+
+    generate_operational_certificate LIVE
+    generate_registration_certificates
+    register_stake_pool
+
+    # Stop syncing cardano-node so block-producing node can be started
+    killall -9 cardano-node
+}
