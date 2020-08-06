@@ -72,7 +72,8 @@ ENV NODE_PORT="3000" \
     PUBLIC_RELAY_IP="TOPOLOGY" \
     WAIT_FOR_SYNC="True" \
     AUTO_TOPOLOGY="True" \
-    PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}"
+    PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}" \
+    LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Add config
 ADD cfg-templates/ /cfg-templates/

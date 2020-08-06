@@ -13,31 +13,38 @@ source /scripts/functions/wait_for_slot
 source /scripts/functions/wait_for_sync
 source /scripts/init_node_vars
 
+# Define wallet
+WALLET=$1
+
+if [ -z "$WALLET" ]; then
+    echo "Wallet is undefined."
+    exit
+fi
+
 # Enter staking directory
-cd ${NODE_PATH}/staking/
-mkdir -p transactions
+cd ${NODE_PATH}/staking/wallets/${WALLET}
 
 echo ""
-echo "Submitting staking addresses to the blockchain."
+echo "Submitting staking addresses for $WALLET to the blockchain."
 
 # Check for required files
 if [ ! -f "stake.vkey" ]; then
-    echo "Missing required stake.vkey. You need to run \`generate_stake_address\` to generate this key."
+    echo "Missing required stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_stake_address\` to generate this key."
+    echo "Missing required stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_stake_address\` to generate this key."
+    echo "Missing required payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_stake_address\` to generate this key."
+    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -45,19 +52,21 @@ if [ -n "$MISSING_FILES" ]; then
     exit
 fi
 
+mkdir -p transactions
+
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
     wait_for_sync 99.90
 fi
 
-if [ -n "$(check_address_registration)" ]; then
+if [ -n "$(check_address_registration ${WALLET})" ]; then
     echo "Your stake address has already been registered in the blockchain."
-    touch ${NODE_PATH}/staking/transactions/register_stake_address.submitted
+    touch transactions/register_stake_address.submitted
     exit
 fi
 
 # Create an address registration certificate
-if [ ! -f "${NODE_PATH}/staking/stake.cert" ]; then
+if [ ! -f "stake.cert" ]; then
     cardano-cli shelley stake-address registration-certificate \
         --staking-verification-key-file stake.vkey \
         --out-file stake.cert
@@ -69,11 +78,11 @@ fi
 # Generate protocol
 cardano-cli shelley query protocol-parameters \
     ${NETWORK_ARGUMENT} \
-    --out-file protocol.json
+    --out-file ${NODE_PATH}/staking/protocol.json
 
 # Get key-deposit
-KEY_DEPOSIT=$(jq -r .keyDeposit protocol.json)
-POOL_DEPOSIT=$(jq -r .poolDeposit protocol.json)
+KEY_DEPOSIT=$(jq -r .keyDeposit ${NODE_PATH}/staking/protocol.json)
+POOL_DEPOSIT=$(jq -r .poolDeposit ${NODE_PATH}/staking/protocol.json)
 MIN_HOLDING=$(expr $KEY_DEPOSIT + $POOL_DEPOSIT + $POOL_PLEDGE)
 
 # Find UTXO in address with enough lovelace to do the transaction
@@ -83,7 +92,7 @@ check_balance ${KEY_DEPOSIT}
 # Draft transaction
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out $(cat payment.addr)+0 \
+    --tx-out ${ADDRESS}+0 \
     --ttl 0 \
     --fee 0 \
     --out-file transactions/register_stake_address.draft \
@@ -97,7 +106,7 @@ FEE=$(cardano-cli shelley transaction calculate-min-fee \
     --witness-count 1 \
     --byron-witness-count 0 \
     ${NETWORK_ARGUMENT} \
-    --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
 
 TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
 echo "Fee is: ${FEE} Lovelace"
@@ -123,7 +132,7 @@ echo "TTL: ${TTL}"
 #
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out $(cat payment.addr)+${REMAINING_AFTER_TX} \
+    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
     --ttl ${TTL} \
     --fee ${FEE} \
     --out-file transactions/register_stake_address.raw \
@@ -137,6 +146,8 @@ cardano-cli shelley transaction sign \
     ${NETWORK_ARGUMENT} \
     --out-file transactions/register_stake_address.signed
 
+
+read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 # Submit the transaction
 OUT=$(cardano-cli shelley transaction submit \
     --tx-file transactions/register_stake_address.signed \
@@ -153,7 +164,7 @@ else
 
     # Wait for blockchain to register the address
     wait_for_slot ${TTL}
-    wait_for_address_registration
+    wait_for_address_registration ${WALLET}
     echo "Your stake address is now registered in the blockchain."
-    touch ${NODE_PATH}/staking/transactions/register_stake_address.submitted
+    touch transactions/register_stake_address.submitted
 fi

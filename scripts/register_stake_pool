@@ -10,27 +10,28 @@ source /scripts/functions/wait_for_pool_registration
 source /scripts/functions/wait_for_slot
 source /scripts/functions/wait_for_sync
 source /scripts/init_node_vars
+TIMESTAMP=$(date +%s)
 
 # Enter staking directory
 cd ${NODE_PATH}/staking/
-mkdir -p transactions
+mkdir -p wallets/owner/transactions
 
 echo ""
 echo "Submitting stake pool certificates to the blockchain."
 
 # Check for required files
-if [ ! -f "stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_stake_address\` to generate this key."
+if [ ! -f "wallets/owner/stake.skey" ]; then
+    echo "Missing required stake.skey. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
-if [ ! -f "payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_stake_address\` to generate this key."
+if [ ! -f "wallets/owner/payment.skey" ]; then
+    echo "Missing required payment.skey. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
-if [ ! -f "payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_stake_address\` to generate this key."
+if [ ! -f "wallets/owner/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -44,8 +45,8 @@ if [ ! -f "pool.cert" ]; then
     MISSING_FILES=1
 fi
 
-if [ ! -f "delegation.cert" ]; then
-    echo "Missing required staking/delegation.cert. You need to run \`generate_registration_certificate\` to generate this certificate."
+if [ ! -f "wallets/owner/delegation.cert" ]; then
+    echo "Missing required staking/wallets/owner/delegation.cert. You need to run \`generate_registration_certificate\` to generate this certificate."
     MISSING_FILES=1
 fi
 
@@ -53,10 +54,27 @@ if [ -n "$MISSING_FILES" ]; then
     exit
 fi
 
-if [ -n "$(check_pool_registration)" ]; then
-    echo "Your stake pool has already been registered in the blockchain."
-    touch ${NODE_PATH}/staking/transactions/register_stake_pool.submitted
-    exit
+# Handle arguments
+for i in "$@"
+do
+case $i in
+    --update)
+        UPDATE=1
+    ;;
+esac
+done
+
+if [ -z "$UPDATE" ]; then
+    if [ -n "$(check_pool_registration)" ]; then
+        echo "Your stake pool has already been registered in the blockchain."
+        touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+        exit
+    fi
+else
+    if [ -z "$(check_pool_registration)" ]; then
+        echo "Pool is not registered in the blockchain. You cannot update the certificates. Register the stakepool first."
+        exit
+    fi
 fi
 
 # Wait for node to sync
@@ -70,32 +88,49 @@ cardano-cli shelley query protocol-parameters \
     --out-file protocol.json
 
 # Get pool-deposit
-POOL_DEPOSIT=$(jq -r .poolDeposit protocol.json)
+if [ -z "$UPDATE" ]; then
+    POOL_DEPOSIT=$(jq -r .poolDeposit protocol.json)
+else
+    POOL_DEPOSIT=0
+fi
 
 # Find UTXO in address with enough lovelace to do the transaction
-ADDRESS=$(cat payment.addr)
-check_balance ${POOL_DEPOSIT}
+ADDRESS=$(cat wallets/owner/payment.addr)
+check_balance $(expr ${POOL_DEPOSIT} + 8000)
+
+# Multiowners delegation certificates
+if [ -n "$MULTI_OWNERS" ]; then
+    echo "Multiple owner delegation certificates"
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+    do
+        echo "$i"
+        MULTIOWNERS_CERT_STRING="${MULTIOWNERS_STRING} --certificate-file wallets/$i/delegation.cert"
+        MULTIOWNERS_SIGN="${MULTIOWNERS_SIGN} --signing-key-file wallets/$i/stake.skey"
+    done
+    echo $MULTIOWNERS_STRING
+fi
 
 # Draft transaction
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out $(cat payment.addr)+0 \
+    --tx-out ${ADDRESS}+0 \
     --ttl 0 \
     --fee 0 \
-    --out-file transactions/register_stake_pool.draft \
+    --out-file wallets/owner/transactions/register_stake_pool.draft \
     --certificate-file pool.cert \
-    --certificate-file delegation.cert
+    --certificate-file wallets/owner/delegation.cert \
+    ${MULTIOWNERS_CERT_STRING}
 
 ## Calculate the fee
 FEE=$(cardano-cli shelley transaction calculate-min-fee \
-    --tx-body-file transactions/register_stake_pool.draft \
+    --tx-body-file wallets/owner/transactions/register_stake_pool.draft \
     --tx-in-count 1 \
     --tx-out-count 1 \
     ${NETWORK_ARGUMENT} \
     --witness-count 1 \
     --byron-witness-count 0 \
     --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
-FEE=$(expr ${FEE} + 5000) # FEE IS TOO SMALL?
+FEE=$(expr ${FEE} + 8000) # FEE IS TOO SMALL?
 TOTAL_PRICE=$(expr ${FEE} + ${POOL_DEPOSIT})
 
 echo "Fee is: ${FEE} Lovelace"
@@ -122,27 +157,31 @@ echo "TTL: ${TTL}"
 echo "Create transaction"
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out $(cat payment.addr)+${REMAINING_AFTER_TX} \
+    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
     --ttl ${TTL} \
     --fee ${FEE} \
-    --out-file transactions/register_stake_pool.raw \
+    --out-file wallets/owner/transactions/register_stake_pool.raw \
     --certificate-file pool.cert \
-    --certificate-file delegation.cert
+    --certificate-file wallets/owner/delegation.cert \
+    ${MULTIOWNERS_CERT_STRING}
 
 # Sign the transaction
 echo "Sign transaction"
 cardano-cli shelley transaction sign \
-    --tx-body-file transactions/register_stake_pool.raw \
-    --signing-key-file payment.skey \
-    --signing-key-file stake.skey \
+    --tx-body-file wallets/owner/transactions/register_stake_pool.raw \
+    --signing-key-file wallets/owner/payment.skey \
+    --signing-key-file wallets/owner/stake.skey \
+    ${MULTIOWNERS_SIGN} \
     --signing-key-file cold-keys/cold.skey \
     ${NETWORK_ARGUMENT} \
-    --out-file transactions/register_stake_pool.signed
+    --out-file wallets/owner/transactions/register_stake_pool.signed
 
 # Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
+
 echo "Submit transaction"
 OUT=$(cardano-cli shelley transaction submit \
-    --tx-file transactions/register_stake_pool.signed \
+    --tx-file wallets/owner/transactions/register_stake_pool.signed \
     ${NETWORK_ARGUMENT} 2>&1)
 
 if [[ $OUT =~ "Error" ]]
@@ -158,5 +197,5 @@ else
     wait_for_slot ${TTL}
     wait_for_pool_registration
     echo "Your stake pool registration has been sent to the blockchain."
-    touch ${NODE_PATH}/staking/transactions/register_stake_pool.submitted
+    touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
 fi

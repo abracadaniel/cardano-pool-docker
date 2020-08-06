@@ -28,12 +28,12 @@ function check_for_files {
         MISSING_FILES=1
     fi
 
-    if [ ! -f "${NODE_PATH}/staking/transactions/register_stake_address.submitted" ]; then
+    if [ ! -f "${NODE_PATH}/staking/wallets/owner/transactions/register_stake_address.submitted" ]; then
         echo "Stake pool address has not been sent to the blockchain"
         MISSING_FILES=1
     fi
 
-    if [ ! -f "${NODE_PATH}/staking/transactions/register_stake_pool.submitted" ]; then
+    if [ ! -f "${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted" ]; then
         echo "Node certificate has not been sent to the blockchain"
         MISSING_FILES=1
     fi

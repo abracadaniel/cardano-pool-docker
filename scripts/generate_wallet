@@ -6,8 +6,9 @@
 # Init node vars
 source /scripts/init_node_vars
 
-mkdir -p ${NODE_PATH}/staking
-cd ${NODE_PATH}/staking
+WALLET=$1
+mkdir -p ${NODE_PATH}/staking/wallets/${WALLET}
+cd ${NODE_PATH}/staking/wallets/${WALLET}
 
 echo ""
 echo "Generate stake addresses"
@@ -45,7 +46,7 @@ if [ ! -f "payment.addr" ]; then
     PAYMENT_ADDR=$(cat payment.addr)
     echo "Payment address: ${PAYMENT_ADDR}."
 else
-    PAYMENT_ADDR=$(cat ${NODE_PATH}/staking/payment.addr)
+    PAYMENT_ADDR=$(cat payment.addr)
     echo "Payment address already exists: ${PAYMENT_ADDR}."
 fi
 

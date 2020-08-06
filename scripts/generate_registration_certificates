@@ -7,6 +7,7 @@
 source /scripts/init_node_vars
 source /scripts/functions/get_public_ip
 source /scripts/functions/stakepool_info
+TIMESTAMP=$(date +%s)
 
 # Enter staking directory
 cd ${NODE_PATH}/staking/
@@ -15,8 +16,8 @@ echo ""
 echo "Generate registration certificates"
 
 # Check for required files
-if [ ! -f "stake.vkey" ]; then
-    echo "Missing required staking/stake.vkey. You need to run \`generate_stake_address\` to generate this key."
+if [ ! -f "wallets/owner/stake.vkey" ]; then
+    echo "Missing required staking/stake.vkey. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -39,6 +40,16 @@ if [ -z "$METADATA_URL" ]; then
     exit
 fi
 
+# Handle arguments
+for i in "$@"
+do
+case $i in
+    --update_cert)
+        UPDATE_CERT=1
+    ;;
+esac
+done
+
 # 1. Create a JSON file with your pool's metadata
 if [ ! -f "metadata.json" ]; then
     echo "Getting metadata file from ${METADATA_URL}"
@@ -50,19 +61,39 @@ METADATA_HASH=$(cardano-cli shelley stake-pool metadata-hash --pool-metadata-fil
 echo "metadata.json hash: ${METADATA_HASH}"
 
 # 3. Generate Stake pool registration certificate
-if [ ! -f "pool.cert" ]; then
+if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
+    if [ -f "pool.cert" ]; then
+        echo "backing up pool.cert."
+        cp pool.cert pool.${TIMESTAMP}.cert
+    fi
+
     if [ "${PUBLIC_RELAY_IP}" == "TOPOLOGY" ]; then
         PUBLIC_RELAY_IP=$(jq -r ".Producers[0].addr" ${NODE_PATH}/topology.json)
+        PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
     fi
     if [ "${PUBLIC_RELAY_IP}" == "PUBLIC" ]; then
         PUBLIC_RELAY_IP=$(get_public_ip)
     fi
-    PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+    if [ -z "$PUBLIC_RELAY_PORT" ]; then
+        PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+    fi
 
     echo "Generating pool.cert"
     stakepool_info
     echo "Public Relay IP: ${PUBLIC_RELAY_IP}"
     echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
+
+    # Multiple owners
+    if [ -n "$MULTI_OWNERS" ]; then
+        echo "Multiple owners"
+        for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+        do
+            echo "$i"
+            MULTIOWNERS_STRING="${MULTIOWNERS_STRING} --pool-owner-stake-verification-key-file wallets/${i}/stake.vkey"
+        done
+        echo $MULTIOWNERS_STRING
+        echo ""
+    fi
 
     cardano-cli shelley stake-pool registration-certificate \
         --cold-verification-key-file cold-keys/cold.vkey \
@@ -70,8 +101,9 @@ if [ ! -f "pool.cert" ]; then
         --pool-pledge ${POOL_PLEDGE} \
         --pool-cost ${POOL_COST} \
         --pool-margin ${POOL_MARGIN} \
-        --pool-reward-account-verification-key-file stake.vkey \
-        --pool-owner-stake-verification-key-file stake.vkey \
+        --pool-reward-account-verification-key-file wallets/owner/stake.vkey \
+        --pool-owner-stake-verification-key-file wallets/owner/stake.vkey \
+        ${MULTIOWNERS_STRING} \
         --pool-relay-port ${PUBLIC_RELAY_PORT} \
         --pool-relay-ipv4 ${PUBLIC_RELAY_IP} \
         --metadata-url ${METADATA_URL} \
@@ -88,12 +120,30 @@ else
 fi
 
 # 2. Generate delegation certificate (pledge)
-if [ ! -f "delegation.cert" ]; then
+if [ ! -f "wallets/owner/delegation.cert" ]; then
     cardano-cli shelley stake-address delegation-certificate \
-        --stake-verification-key-file stake.vkey \
+        --stake-verification-key-file wallets/owner/stake.vkey \
         --cold-verification-key-file cold-keys/cold.vkey \
-        --out-file delegation.cert \
+        --out-file wallets/owner/delegation.cert \
     && echo "Generated delegation.cert"
 else
     echo "delegation.cert already exists."
+fi
+
+# Multiple owners
+if [ -n "$MULTI_OWNERS" ]; then
+    echo "Generating delegation certificates for multiple owners"
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+    do
+        echo "- $i"
+        if [ ! -f "wallets/$i/delegation.cert" ]; then
+            cardano-cli shelley stake-address delegation-certificate \
+                --stake-verification-key-file wallets/$i/stake.vkey \
+                --cold-verification-key-file cold-keys/cold.vkey \
+                --out-file wallets/$i/delegation.cert \
+            && echo "Generated delegation.cert"
+        else
+            echo "-- delegation.cert already exists."
+        fi
+    done
 fi

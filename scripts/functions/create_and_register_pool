@@ -10,15 +10,25 @@ function create_and_register_pool {
         BACKUPNAME="staking.${TIMESTAMP}.tar.gz"
         echo "staking directory already exists."
         echo "Backing up to ${BACKUPNAME}."
-        tar -zcvf ${NODE_PATH}/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
+        mkdir -p backups/
+        tar -zcvf ${NODE_PATH}/backups/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
     fi
 
     # Wait for database to load (wait_for_socket in loop)
     wait_for_socket
 
     # Start creation
-    generate_stake_address
-    register_stake_address
+    generate_wallet owner
+    register_stake_address owner
+    
+    ## Generate wallets for multiple owners
+    if [ -n "$MULTI_OWNERS" ]; then
+        for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+        do
+            generate_wallet $i
+            register_stake_address $i
+        done
+    fi
 
     generate_operational_certificate LIVE
     generate_registration_certificates

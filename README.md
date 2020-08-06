@@ -247,7 +247,9 @@ You can pass the following environment variables to the container.
 | POOL_COST | Operational costs per epoch (lovelace). Default: 10000000000 |
 | POOL_MARGIN | Operator margin. Default: 0.05 |
 | METADATA_URL | URL for file containing stake pool metadata information. See \`examples/metadata.json\` for examle. The file be uploaded to an URL accessible to public. |
+| MULTI_OWNERS | Define multiple stakepool owner wallets which participates in the stakepool pledge. Comma separated values. Example: owner2,owner3. If the wallets do not exist they will automatically be created. Default: None. |
 | PUBLIC_RELAY_IP | Public IP address of Relay node. <br/><br/>Values:<br/>\<Any IP address\><br/>TOPOLOGY: Use first entry of the topology.<br/>PUBLIC: Use public IP of node.<br/>Default: TOPOLOGY. |
+| PUBLIC_RELAY_PORT | Public port of Relay node. <br/><br/>Values:<br/>\<Any Port\><br/>If PUBLIC_RELAY_IP=TOPOLOGY the PUBLIC_RELAY_PORT will also be updated accordingly.<br/>Default: First entry of the topology. |
 | AUTO_TOPOLOGY | Automatically update topology.json. Default: True |
 
 

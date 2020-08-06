@@ -1,9 +1,10 @@
 function wait_for_address_registration {
     source /scripts/functions/check_address_registration
 
+    WALLET=$1
     echo "Waiting for the blockchain to register the address."
     while true; do
-        if [ -n "$(check_address_registration)" ]; then  
+        if [ -n "$(check_address_registration ${WALLET})" ]; then  
             break
         fi
         echo "Blockchain has not yet registered the address. Waiting.."

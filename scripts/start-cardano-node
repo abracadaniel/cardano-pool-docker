@@ -31,6 +31,7 @@ function help {
     echo "NODE_TOPOLOGY                 Topology of the node. Should be comma separated for each individual node to add, on the form: <ip>:<port>/<valency>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1."
     echo "NODE_RELAY                    Set to True if default IOHK relay should be added to the network topology. Default: False."
     echo "METADATA_URL                  URL for file containing stake pool metadata information. See \`examples/metadata.json\` for examle. The file be uploaded to an URL accessible to public."
+    echo "PUBLIC_RELAY_PORT             Public port of Relay node."
     echo "PUBLIC_RELAY_IP               Public IP address of Relay node."
     echo "                              Values:"
     echo "                              <Any IP address>"

@@ -38,7 +38,8 @@ if [ -f "pool-keys/KESPERIOD" ]; then
     echo "pool-keys already exist."
     echo "Created at slot: ${KESSLOT}"
     echo "Backing up to ${BACKUPNAME} before creating new KES keys."
-    tar -zcvf ${BACKUPNAME} pool-keys/ > /dev/null
+    mkdir -p ../backups/
+    tar -zcvf ../backups/${BACKUPNAME} pool-keys/ > /dev/null
 fi
 
 # Create Verifiable Random Function key
