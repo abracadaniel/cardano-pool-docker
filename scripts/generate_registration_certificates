@@ -43,18 +43,26 @@ fi
 # Handle arguments
 for i in "$@"
 do
-case $i in
-    --update_cert)
-        UPDATE_CERT=1
-    ;;
-esac
+    case $i in
+        --update_cert)
+            UPDATE_CERT=1
+        ;;
+        --cold-create)
+            COLD_CREATE=1
+        ;;
+    esac
 done
 
 # 1. Create a JSON file with your pool's metadata
 if [ ! -f "metadata.json" ]; then
-    echo "Getting metadata file from ${METADATA_URL}"
-    wget -O metadata.json ${METADATA_URL}
+    if [ -z "$COLD_CREATE" ]; then
+        echo "Getting metadata file from ${METADATA_URL}"
+        wget -O metadata.json ${METADATA_URL}
+    else
+        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/metadata.json. Please add this file, and ENTER when you have placed the file and are ready to continue."
+    fi
 fi
+
 # 2. get hash of file
 echo "Getting hash of metadata.json"
 METADATA_HASH=$(cardano-cli shelley stake-pool metadata-hash --pool-metadata-file metadata.json)
@@ -111,9 +119,19 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         ${NETWORK_ARGUMENT} \
         --out-file pool.cert \
     && echo "Generated pool.cert"
+
+    PAYMENT_ADDR=$(cat ${NODE_PATH}/staking/wallets/owner/payment.addr)
+    STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/owner/stake.addr)
+    POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+
     echo "export POOL_PLEDGE=${POOL_PLEDGE}" > POOL_VARS
     echo "export POOL_COST=${POOL_COST}" >> POOL_VARS
     echo "export POOL_MARGIN=${POOL_MARGIN}" >> POOL_VARS
+    echo "export POOL_MARGIN=${POOL_MARGIN}" >> POOL_VARS
+    echo "export PAYMENT_ADDR=${PAYMENT_ADDR}" >> POOL_VARS
+    echo "export STAKE_ADDR=${STAKE_ADDR}" >> POOL_VARS
+    echo "export POOL_ID=${POOL_ID}" >> POOL_VARS
+    echo "export MULTI_OWNERS=${MULTI_OWNERS}" >> POOL_VARS
     echo ""
 else
     echo "pool.cert already exists."

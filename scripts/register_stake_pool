@@ -21,17 +21,17 @@ echo "Submitting stake pool certificates to the blockchain."
 
 # Check for required files
 if [ ! -f "wallets/owner/stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "wallets/owner/payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "wallets/owner/payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_waller owner\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -61,19 +61,24 @@ case $i in
     --update)
         UPDATE=1
     ;;
+    --cold-create)
+        COLD_CREATE=1
+    ;;
 esac
 done
 
-if [ -z "$UPDATE" ]; then
-    if [ -n "$(check_pool_registration)" ]; then
-        echo "Your stake pool has already been registered in the blockchain."
-        touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
-        exit
-    fi
-else
-    if [ -z "$(check_pool_registration)" ]; then
-        echo "Pool is not registered in the blockchain. You cannot update the certificates. Register the stakepool first."
-        exit
+if [ -z "$COLD_CREATE" ]; then
+    if [ -z "$UPDATE" ]; then
+        if [ -n "$(check_pool_registration)" ]; then
+            echo "Your stake pool has already been registered in the blockchain."
+            touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+            exit
+        fi
+    else
+        if [ -z "$(check_pool_registration)" ]; then
+            echo "Pool is not registered in the blockchain. You cannot update the certificates. Register the stakepool first."
+            exit
+        fi
     fi
 fi
 
@@ -83,9 +88,15 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
 fi
 
 # Generate protocol
-cardano-cli shelley query protocol-parameters \
-    ${NETWORK_ARGUMENT} \
-    --out-file protocol.json
+if [ -z "$COLD_CREATE" ]; then
+    cardano-cli shelley query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file ${NODE_PATH}/staking/protocol.json
+else
+    if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
+        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/protocol.json. You must transfer this file from an online node. Press ENTER when you have placed the file and is ready to continue."
+    fi
+fi
 
 # Get pool-deposit
 if [ -z "$UPDATE" ]; then
@@ -138,10 +149,12 @@ echo "Pool-Deposit: ${POOL_DEPOSIT} Lovelace"
 echo "Total Price is: ${TOTAL_PRICE} Lovelace"
 
 # Find UTXO in address with enough lovelace to do the transaction
-check_balance ${TOTAL_PRICE}
-
-# Update slot and TTL
-SLOT=$(get_slot)
+if [ -z "$COLD_CREATE" ]; then
+    check_balance ${TOTAL_PRICE}
+    SLOT=$(get_slot)
+else
+    read -p "Enter the current tip slot: " SLOT
+fi
 TTL=$(expr ${SLOT} + 500)
 
 # Display transaction info
@@ -176,26 +189,29 @@ cardano-cli shelley transaction sign \
     ${NETWORK_ARGUMENT} \
     --out-file wallets/owner/transactions/register_stake_pool.signed
 
+
 # Submit the transaction
-read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
+if [ -z "$COLD_CREATE" ]; then
+    read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
 
-echo "Submit transaction"
-OUT=$(cardano-cli shelley transaction submit \
-    --tx-file wallets/owner/transactions/register_stake_pool.signed \
-    ${NETWORK_ARGUMENT} 2>&1)
+    echo "Submit transaction"
+    OUT=$(cardano-cli shelley transaction submit \
+        --tx-file wallets/owner/transactions/register_stake_pool.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
 
-if [[ $OUT =~ "Error" ]]
-then
-    echo "An error occoured."
-    echo ${OUT}
-    read
-else
-    echo "Transaction has been submitted to the blockchain."
-    echo ${OUT}
+    if [[ $OUT =~ "Error" ]]
+    then
+        echo "An error occoured."
+        echo ${OUT}
+        read
+    else
+        echo "Transaction has been submitted to the blockchain."
+        echo ${OUT}
 
-    # Wati for blockchain to register the pool
-    wait_for_slot ${TTL}
-    wait_for_pool_registration
-    echo "Your stake pool registration has been sent to the blockchain."
-    touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+        # Wait for blockchain to register the pool
+        wait_for_slot ${TTL}
+        wait_for_pool_registration
+        echo "Your stake pool registration has been sent to the blockchain."
+        touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+    fi
 fi

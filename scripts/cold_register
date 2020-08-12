@@ -1,0 +1,110 @@
+#!/bin/bash
+
+source /scripts/init_node_vars
+source /scripts/functions/check_address_registration
+source /scripts/functions/wait_for_address_registration
+source /scripts/functions/wait_for_pool_registration
+source /scripts/functions/wait_for_slot
+source /scripts/functions/wait_for_sync
+
+if [ -f "${NODE_PATH}/staking/POOL_VARS" ]; then
+    source ${NODE_PATH}/staking/POOL_VARS
+    if [ -n "${REGISTERED_COLD}" ]; then
+        echo "Registration is already done."
+        exit
+    fi
+fi
+
+function submit_stake_addr {
+    WALLET=$1
+    cd ${NODE_PATH}/staking/wallets/${WALLET}/
+    STAKE_ADDR=$(cat stake.addr)
+
+    echo "Submitting stake address for wallet ${WALLET}"
+    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+        echo "Your stake address for ${WALLET} has already been registered in the blockchain."
+        return
+    fi
+
+    OUT=$(cardano-cli shelley transaction submit \
+        --tx-file transactions/register_stake_address.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
+
+    if [[ $OUT =~ "Error" ]]
+    then
+        echo "An error occoured."
+        echo ${OUT}
+        read
+        exit
+    else
+        echo "Transaction has been submitted to the blockchain."
+        echo ${OUT}
+
+        echo "Wait for the blockchain to register the address."
+        wait_for_address_registration ${STAKE_ADDR}
+        echo "Your stake address is now registered in the blockchain."
+        touch transactions/register_stake_address.submitted
+    fi
+}
+
+# Check for staking-hot.tar.gz
+if [ ! -f "${NODE_PATH}/staking-hot.tar.gz" ]; then
+    echo "Missing required ${NODE_PATH}staking-hot.tar.gz file. First run with the \`--cold-register\` argument on a secure offline node."
+    read -n 1 -r -s -p "If you already have generated the file, please place it in its correct place, and press ENTER to continue."
+fi
+
+# Backup staking/ directory
+if [ -d "${NODE_PATH}/staking/" ]; then
+    TIMESTAMP=$(date +%s)
+    BACKUPNAME="staking.${TIMESTAMP}.tar.gz"
+    echo "staking directory already exists."
+    echo "Backing up to ${BACKUPNAME}."
+    mkdir -p ${NODE_PATH}/backups/
+    tar -zcvf ${NODE_PATH}/backups/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
+fi
+
+# Unpack staking-hot.tar.gz
+cd ${NODE_PATH} && tar -xvf staking-hot.tar.gz
+source ${NODE_PATH}/staking/POOL_VARS
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+# Submit the stake address transaction
+submit_stake_addr owner
+if [ -n "$MULTI_OWNERS" ]; then
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+    do
+        submit_stake_addr $i
+    done
+fi
+
+
+# Submit the pool transaction
+read -n 1 -r -s -p $'Press enter to submit the stake pool registration transaction...\n'
+
+echo "Submitting transaction"
+OUT=$(cardano-cli shelley transaction submit \
+    --tx-file cold-registration/register_stake_pool.signed \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+    exit
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+    
+    echo "Wait for blockchain to register the pool"
+    wait_for_pool_registration
+    echo "Your stake pool registration has been sent to the blockchain."
+fi
+
+echo "Press any key to continue."
+echo "export REGISTERED_COLD=True" >> ${NODE_PATH}/staking/POOL_VARS
+read

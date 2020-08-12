@@ -1,51 +1,59 @@
 function check_balance {
     PRICE=$1
 
-    while true; do
-        echo ""
-        echo "Checking balance for address ${ADDRESS}."
-        echo ""
-
-        cardano-cli shelley query utxo \
-            ${NETWORK_ARGUMENT} \
-            --address ${ADDRESS}
-
-        UTXOS=$(cardano-cli shelley query utxo \
-            ${NETWORK_ARGUMENT} \
-            --address ${ADDRESS} | tail -n +3)
-        echo "UTXO#TXIX: LOVELACE"
-        while IFS= read -r line ; do
-            arr=(${line})
-            LOVELACE=${arr[2]}
-
-            if [ -n "${LOVELACE}" ]; then
-                echo "${arr[0]}#${arr[1]}: ${arr[2]}"
-                if [ "$LOVELACE" -ge "$PRICE" ]; then
-                    UTXO=${arr[0]}
-                    TXIX=${arr[1]}
-                    break
-                fi
-            fi
-        done <<< "${UTXOS}"
-
-        if [ -n "${UTXO}" ]; then
-            echo "Address is successfully funded."
+    if [ -z "$COLD_CREATE" ]; then
+        while true; do
             echo ""
-            echo "Got UTXO"
-            echo "UTXO: ${UTXO}#${TXIX}"
-            echo "Lovelace Holding: ${LOVELACE}"
-            break
-        fi
-        
-        echo "You need to fund your address with atleast ${PRICE} Lovelace to register the key."
-        echo "Your payment address is:"
-        echo "${ADDRESS}"
-        echo ""
-        echo "If you have funded your address, you need to wait for the transaction to be processed and your node to synchronize."
-        sync_status
-        echo ""
+            echo "Checking balance for address ${ADDRESS}."
+            echo ""
 
-        sleep 10
-    done
+            cardano-cli shelley query utxo \
+                ${NETWORK_ARGUMENT} \
+                --address ${ADDRESS}
+
+            UTXOS=$(cardano-cli shelley query utxo \
+                ${NETWORK_ARGUMENT} \
+                --address ${ADDRESS} | tail -n +3)
+            echo "UTXO#TXIX: LOVELACE"
+            while IFS= read -r line ; do
+                arr=(${line})
+                LOVELACE=${arr[2]}
+
+                if [ -n "${LOVELACE}" ]; then
+                    echo "${arr[0]}#${arr[1]}: ${arr[2]}"
+                    if [ "$LOVELACE" -ge "$PRICE" ]; then
+                        UTXO=${arr[0]}
+                        TXIX=${arr[1]}
+                        break
+                    fi
+                fi
+            done <<< "${UTXOS}"
+
+            if [ -n "${UTXO}" ]; then
+                echo "Address is successfully funded."
+                echo ""
+                echo "Got UTXO"
+                echo "UTXO: ${UTXO}#${TXIX}"
+                echo "Lovelace Holding: ${LOVELACE}"
+                break
+            fi
+            
+            echo "You need to fund your address with atleast ${PRICE} Lovelace to register the key."
+            echo "Your payment address is:"
+            echo "${ADDRESS}"
+            echo ""
+            echo "If you have funded your address, you need to wait for the transaction to be processed and your node to synchronize."
+            sync_status
+            echo ""
+
+            sleep 10
+        done
+    else
+        echo "Find UTXO and TXIX containing atleast ${PRICE} Lovelace for address ${ADDRESS} (Wallet ${WALLET})"
+        echo "Run \`cardano-cli shelley query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}\`, on online node to find the values."
+        read -p "Enter the UTXO: " UTXO
+        read -p "Enter the TXIX: " TXIX
+        LOVELACE=0
+    fi
 }
 

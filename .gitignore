@@ -1,4 +1,4 @@
-examples/config/
+config/
 private/
 /rsync.sh
 *.pyc

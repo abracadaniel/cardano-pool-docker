@@ -4,7 +4,32 @@
 # Then synchronously we start creating and registering the keys.
 mkdir -p ${NODE_PATH}/logs/
 
-tmux \
-  new-session  "source /scripts/functions/run_node; run_node" \; \
-  split-window "source /scripts/functions/create_and_register_pool; create_and_register_pool |& tee ${NODE_PATH}/logs/create_stakepool.$(date +%s).log" \; \
-  select-layout even-horizontal
+for i in "$@"; do
+  case $i in
+      --cold-create)
+        COLD_CREATE=1
+        break
+      ;;
+      --cold-register)
+        COLD_REGISTER=1
+        break
+      ;;
+      *)
+        break
+      ;;
+  esac
+done
+
+if [ -n "$COLD_CREATE" ]; then
+  cold_create |& tee ${NODE_PATH}/logs/create_stakepool.$(date +%s).log
+elif [ -n "$COLD_REGISTER" ]; then
+  tmux \
+    new-session  "source /scripts/functions/run_node; run_node" \; \
+    split-window "cold_register |& tee ${NODE_PATH}/logs/register_stakepool.$(date +%s).log" \; \
+    select-layout even-horizontal
+else
+  tmux \
+    new-session  "source /scripts/functions/run_node; run_node" \; \
+    split-window "source /scripts/functions/create_and_register_pool; create_and_register_pool |& tee ${NODE_PATH}/logs/create_stakepool.$(date +%s).log" \; \
+    select-layout even-horizontal
+fi

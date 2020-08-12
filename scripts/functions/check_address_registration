@@ -1,7 +1,6 @@
 function check_address_registration {
     source /scripts/init_node_vars
     
-    WALLET=$1
-    STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/stake.addr)
+    STAKE_ADDR=$1
     cardano-cli shelley query stake-address-info --address ${STAKE_ADDR} ${NETWORK_ARGUMENT} | grep -v {}
 }

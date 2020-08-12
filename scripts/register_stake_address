@@ -23,34 +23,44 @@ fi
 
 # Enter staking directory
 cd ${NODE_PATH}/staking/wallets/${WALLET}
+STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/stake.addr)
 
 echo ""
 echo "Submitting staking addresses for $WALLET to the blockchain."
 
 # Check for required files
 if [ ! -f "stake.vkey" ]; then
-    echo "Missing required stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ -n "$MISSING_FILES" ]; then
     exit
 fi
+
+# Handle arguments
+for i in "$@"; do
+    case $i in
+        --cold-create)
+            COLD_CREATE=1
+        ;;
+    esac
+done
 
 mkdir -p transactions
 
@@ -59,10 +69,12 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
     wait_for_sync 99.90
 fi
 
-if [ -n "$(check_address_registration ${WALLET})" ]; then
-    echo "Your stake address has already been registered in the blockchain."
-    touch transactions/register_stake_address.submitted
-    exit
+if [ -z "$COLD_CREATE" ]; then
+    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+        echo "Your stake address has already been registered in the blockchain."
+        touch transactions/register_stake_address.submitted
+        exit
+    fi
 fi
 
 # Create an address registration certificate
@@ -76,9 +88,15 @@ else
 fi
 
 # Generate protocol
-cardano-cli shelley query protocol-parameters \
-    ${NETWORK_ARGUMENT} \
-    --out-file ${NODE_PATH}/staking/protocol.json
+if [ -z "$COLD_CREATE" ]; then
+    cardano-cli shelley query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file ${NODE_PATH}/staking/protocol.json
+else
+    if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
+        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/protocol.json. You must transfer this file from an online node. Press ENTER when you have placed the file and are ready to continue."
+    fi
+fi
 
 # Get key-deposit
 KEY_DEPOSIT=$(jq -r .keyDeposit ${NODE_PATH}/staking/protocol.json)
@@ -114,10 +132,14 @@ echo "Key-Deposit: ${KEY_DEPOSIT} Lovelace"
 echo "Total Price is: ${TOTAL_PRICE}"
 
 # Find UTXO in address with enough lovelace to do the transaction
-check_balance ${TOTAL_PRICE}
+if [ -z "$COLD_CREATE" ]; then
+    check_balance ${TOTAL_PRICE}
+    SLOT=$(get_slot)
+else
+    read -p "Enter the current tip slot: " SLOT
+fi
 
 # Get slot and TTL
-SLOT=$(get_slot)
 TTL=$(expr ${SLOT} + 500)
 
 # Display transaction info
@@ -147,24 +169,27 @@ cardano-cli shelley transaction sign \
     --out-file transactions/register_stake_address.signed
 
 
-read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 # Submit the transaction
-OUT=$(cardano-cli shelley transaction submit \
-    --tx-file transactions/register_stake_address.signed \
-    ${NETWORK_ARGUMENT} 2>&1)
+if [ -z "$COLD_CREATE" ]; then
+    read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
+    
+    OUT=$(cardano-cli shelley transaction submit \
+        --tx-file transactions/register_stake_address.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
 
-if [[ $OUT =~ "Error" ]]
-then
-    echo "An error occoured."
-    echo ${OUT}
-    read
-else
-    echo "Transaction has been submitted to the blockchain."
-    echo ${OUT}
+    if [[ $OUT =~ "Error" ]]
+    then
+        echo "An error occoured."
+        echo ${OUT}
+        read
+    else
+        echo "Transaction has been submitted to the blockchain."
+        echo ${OUT}
 
-    # Wait for blockchain to register the address
-    wait_for_slot ${TTL}
-    wait_for_address_registration ${WALLET}
-    echo "Your stake address is now registered in the blockchain."
-    touch transactions/register_stake_address.submitted
+        # Wait for blockchain to register the address
+        wait_for_slot ${TTL}
+        wait_for_address_registration ${STAKE_ADDR}
+        echo "Your stake address is now registered in the blockchain."
+        touch transactions/register_stake_address.submitted
+    fi
 fi

@@ -1,71 +1,45 @@
 #!/bin/bash
 
 source /scripts/init_node_vars
+source /scripts/functions/check_pool_registration
 
-function run {
-    tmux \
-    new-session  "source /scripts/functions/run_stakingnode; run_stakingnode" \; \
-    split-window "source /scripts/functions/status; status" \; \
-    select-layout even-horizontal
-}
+# Check for required files
+if [ ! -f "${NODE_PATH}/staking/pool-keys/kes.skey" ]; then
+    echo "Missing required pool-keys/kes.skey."
+    MISSING_FILES=1
+fi
 
-function check_for_files {
-    unset MISSING_FILES
+if [ ! -f "${NODE_PATH}/staking/pool-keys/vrf.skey" ]; then
+    echo "Missing required pool-keys/vrf.skey."
+    MISSING_FILES=1
+fi
 
-    # Check for required files
-    if [ ! -f "${NODE_PATH}/staking/pool-keys/kes.skey" ]; then
-        echo "Missing required kes.skey."
-        MISSING_FILES=1
-    fi
+if [ ! -f "${NODE_PATH}/staking/pool-keys/node.cert" ]; then
+    echo "Missing required pool-keys/node.cert."
+    MISSING_FILES=1
+fi
 
-    if [ ! -f "${NODE_PATH}/staking/pool-keys/vrf.skey" ]; then
-        echo "Missing required vrf.skey."
-        MISSING_FILES=1
-    fi
+if [ ! -f "${NODE_PATH}/staking/POOL_ID" ]; then
+    echo "Missing required POOL_ID."
+    MISSING_FILES=1
+fi
 
-    if [ ! -f "${NODE_PATH}/staking/pool-keys/node.cert" ]; then
-        echo "Missing required node.cert."
-        MISSING_FILES=1
-    fi
+if [ -z "$(check_pool_registration)" ]; then
+    echo "Pool is not registered in the blockchain. Register the stakepool first."
+    exit
+fi
 
-    if [ ! -f "${NODE_PATH}/staking/wallets/owner/transactions/register_stake_address.submitted" ]; then
-        echo "Stake pool address has not been sent to the blockchain"
-        MISSING_FILES=1
-    fi
 
-    if [ ! -f "${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted" ]; then
-        echo "Node certificate has not been sent to the blockchain"
-        MISSING_FILES=1
-    fi
-
-    if [ ! -f "${NODE_PATH}/staking/POOL_ID" ]; then
-        echo "Missing required POOL_ID."
-        MISSING_FILES=1
-    fi
-}
-
-check_for_files
 if [ -n "$MISSING_FILES" ]; then
     echo "You are missing required files to start."
-
-    if [ -n "$CREATE_STAKEPOOL" ]; then
-        create_stakepool
-
-        check_for_files
-
-        if [ -n "$MISSING_FILES" ]; then
-            echo "Required files are still missing. Something went wrong in the creation process. Requires manual checking."
-            read
-        else
-            run
-        fi
-    else
-        echo "You need to initialize the stake pool keys, addresses and certificates and submit them to the blockchain first."
-        echo "You can do that by running \`create_stakepool\`"
-        read
-    fi
+    echo "You need to initialize the stake pool keys, addresses and certificates and submit them to the blockchain first."
+    echo "You can do that by running \`create_stakepool\`"
+    read
 
     exit
 else
-    run
+    tmux \
+        new-session  "source /scripts/functions/run_stakingnode; run_stakingnode" \; \
+        split-window "source /scripts/functions/status; status" \; \
+        select-layout even-horizontal
 fi

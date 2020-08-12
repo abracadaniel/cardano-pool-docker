@@ -10,104 +10,23 @@ If you want to run a stake pool, the block-producing container can take all the 
 
 ## Steps in Running a Stake Pool
 
-### The easy way
+### Reasonably secure
 
-1. Upload your stake-pool metadata json file ([See example](#metadata-example)) to a host so it is accessible to the public. For example as a [github gist](https://gist.github.com/).
-2. Start a relay node and make it connect to the block-producing node. See the [relay node example](#relay-example).
-3. Start a block-producing node with the `--staking` argument and `CREATE_STAKEPOOL="True"` environment variable, and make it connect to the relay node. See the [block-producing node example](#producing-example)
-4. Wait for the block-producing node to setup and register your pool.
-5. Fund your payment address generated and displayed in Step 4 to finalize the registration.
-6. Backup and remove the `cold-keys` directory from the `config` directory of the block-producing node.
-
-The docker-compose file `examples/mc4-docker-compose.yaml` will run these 2 containers automatically.
-Use the command `docker-compose -f mc4-docker-compose.yaml up` to start them.
-
-**Warning:** These examples are ONLY for demonstration. The examples will run the nodes on the same server, using the `host` network, and connects to eachother using the localhost IP-address. This is not recommended. It is recommended to run the nodes on seperate servers and connect them using their public or local network IP-addresses. The idea is to keep the block-producing node completely locked off from anything other than the relay node. The block-producing node will also initialize and register the stake pool automatically, which is better to do on a seperate node, to keep the `cold-keys` directory away from the online nodes.
-
-
-#### Renewing KES keys and certificates
-
-To renew your KES keys and certificates you have to run the `generate_operational_certificate` command in the block-producing container.
-The status window in the block-producing container will tell you when you have to generate new keys.
-
-1. Start the command-line interface in the block-producing container containing the `cold-keys` directory. See `examples/mc4-producing-cli.sh`.
-2. Run the `generate_operational_certificate` command and wait for it to complete.
-3. Restart the block-producing container.
-
-
-#### relay node on mainnet-candidate4 <a id="relay-example"></a>
-
-See `examples/mc4-relay1.sh`.
-
-```
-docker run -it --rm \
-    --network=host \
-    --name mc4-relay1 \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
-    -e NODE_PORT="3001" \
-    -e NODE_NAME="mc4-relay1" \
-    -e NODE_RELAY="True" \
-    -e NODE_TOPOLOGY="127.0.0.1:3000/1" \
-    -e CARDANO_NETWORK="mc4" \
-    -e EKG_PORT="12789" \
-    -e PROMETHEUS_PORT="12799" \
-    -e PROMETHEUS_HOST="127.0.0.1" \
-    -e HOST_ADDR="0.0.0.0" \
-    -v $PWD/config/local/:/config/ \
-    arrakis/cardano-node:latest --start
-```
-
-
-#### block-producing node on mainnet-candidate4 <a id="producing-example"></a>
-
-This will initialize and register the stakepool, and start the block-producing node.
-
-See `examples/mc4-producing.sh`.
-
-```
-docker run -it --rm \
-    --network=host \
-    --name mc4-producing \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
-    -e NODE_PORT="3000" \
-    -e NODE_NAME="mc4-block-producing" \
-    -e NODE_TOPOLOGY="127.0.0.1:3001/1" \
-    -e NODE_RELAY="False" \
-    -e CARDANO_NETWORK="mc4" \
-    -e EKG_PORT="12788" \
-    -e PROMETHEUS_PORT="12798" \
-    -e PROMETHEUS_HOST="127.0.0.1" \
-    -e HOST_ADDR="0.0.0.0" \
-    -e POOL_PLEDGE="100000000000" \
-    -e POOL_COST="1000000000" \
-    -e POOL_MARGIN="0.05" \
-    -e CREATE_STAKEPOOL="True" \
-    -e METADATA_URL="https://gist.githubusercontent.com/abracadaniel/58dfa2cfe0f986c7f445deb151ed1b49/raw/4bb8155af7be65d7e9869f0923c7ce778c75368b/metadata.json" \
-    -e PUBLIC_RELAY_IP="PUBLIC" \
-    -v $PWD/config/local/:/config/ \
-    arrakis/cardano-node:latest --start --staking
-```
-
-
-### Best practice
-
-This is an example on how to run your staking pool more securely, by keeping your `cold-keys` away from the online block-producing node.
+This is an example on how to run your staking pool in a reasonably securely way, by keeping your `cold-keys` and `wallets` away from the online block-producing node.
 
 For this setup you will need 3 hosts.
 `host1` for running the relay node.
 `host2` host for running the block-producing node.
-`host3` host for generating and registering all the keys, addresses and certificates and storing the cold-keys for refreshing the KES keys and certificates. This can be a host you are running locally, with all incoming traffic completely shut off.
+`host3` host for generating and registering all the keys, addresses and certificates and storing the cold-keys for refreshing the KES keys and certificates. This can be a host you are running locally, for example a secure linux live boot, with all incoming traffic completely shut off.
 
 1. Upload your stake-pool metadata json file ([See example](#metadata-example)) to a host so it is accessible to the public. For example as a [github gist](https://gist.github.com/).
 2. Start a relay node on `host1` and make it connect to the block-producing node on `host2`. See the [relay node example](#relay-example2).
-3. Start a block-producing node on `host3`, with the `--staking` argument and `CREATE_STAKEPOOL="True"` environment variable, and make it connect to the relay node on `host1`. See the [registration node example](#registration-example2).
+3. Start a registration node on `host3`, with the `--staking` and`--create` arguments, and make it connect to the relay node on `host1`. See the [registration node example](#registration-example2).
 4. Fund your payment address generated and displayed in Step 3 to finalize the registration.
-5. Wait for the block-producing node on `host3` to setup and register your pool.
-6. Copy the `config/staking` directory, excluding the `cold-keys` directory, from the block-producing node on `host3` to the `config/staking` directory on `host2`.
-7. Start a block-producing node on `host2`, with the `--staking` argument, and make it connect to the relay node on `host1`. See the [block-producing node example](#producing-example2).
-8. Create Firewall rules for your block-producing node on `host3` to only accept incoming traffic from your relay node on `host1`.
+5. Wait for the registration node on `host3` to setup and register your pool.
+6. Create Firewall rules for your block-producing node on `host2` to only accept incoming traffic from your relay node on `host1`.
+7. Copy the `config/staking/pool-keys` directory from the registration node on `host3` to the `config/staking/pool-keys` directory on `host2`.
+8. Start a block-producing node on `host2`, with the `--start` and `--staking` arguments, and make it connect to the relay node on `host1`. See the [block-producing node example](#producing-example2).
 
 
 #### Renewing KES keys and certificates
@@ -158,13 +77,12 @@ docker run -it --rm \
     -e NODE_NAME="registration" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \
     -e CARDANO_NETWORK="main" \
-    -e CREATE_STAKEPOOL="True" \
     -e POOL_PLEDGE="100000000000" \
     -e POOL_COST="1000000000" \
     -e POOL_MARGIN="0.05" \
     -e METADATA_URL="<URL of metadata.json>" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --start --staking
+    arrakis/cardano-node:latest --start --create
 ```
 
 
@@ -188,9 +106,63 @@ docker run -it --rm \
     arrakis/cardano-node:latest --start --staking
 ```
 
-#### Monitoring
+
+### Best practice
+
+This is an example on how to run your staking pool in a completely secure way, by only keeping your `cold-keys` and `wallets` on a completely offline node, and then transfer all relevant registration transactions and `pool-keys` to the online block-producing node. This requires a bit more steps than the reasonably secure method
+
+For this setup you will need 3 hosts.
+`host1` for running the relay node.
+`host2` host for running the block-producing node and submitting the registration transactions.
+`host3` host for generating all the keys, addresses, certificates and transactions, and storing the cold-keys for refreshing the KES keys and certificates. This must be an completely offline host running locally.
+
+1. Upload your stake-pool metadata json file ([See example](#metadata-example)) to a host so it is accessible to the public. For example as a [github gist](https://gist.github.com/).
+2. Start a relay node on `host1` and make it connect to the block-producing node on `host2`.
+3. Generate `protocol.json` on `host1` by running `get_protocol`.
+4. Transfer the `protocol.json` from `host1` to the staking directory of `host3`.
+5. Add the `metadata.json` file to `config/staking` directory the on `host3`
+6. Start a cold-creation node `host3` using the `--create-cold` argument, and follow steps.
+7. Fund your owners payment address(es) created on `host3`, make sure you send to the correct addresses.
+8. Get UTXO and TXIX for funded owners payment address(es) by quering the address(es) on `host1` or `host2`.
+9. Input the relevant UTXO and TXIX values when promted on `host3`.
+10. Find the slot tip of the blockchain by running `get_slot` on `host1` or `host2`.
+11. Input the slot tip on `host3` when prompted.
+12. Create Firewall rules for your block-producing node on `host2` to only accept incoming traffic from your relay node on `host1`.
+13. Upload staking-hot.tar.gz on `host2`
+14. Start a block-producing node on `host2`, with the `--start`, `--staking` and `--register-cold` arguments, and make it connect to the relay node on `host1`.
+15. Wait for the block-producing node on `host2` to register your pool and start staking.
+
+See examples of the containers in `examples/best-practice`.
+
+
+### Test setup
+
+**Warning:** These examples are ONLY for demonstration. The examples will run the nodes on the same server, using the `host` network, and connects to eachother using the localhost IP-address. This is not recommended. It is recommended to run the nodes on seperate servers and connect them using their public or local network IP-addresses, if they run within the same network. The idea is to keep the block-producing node completely locked off from anything other than the relay node. The block-producing node will also initialize and register the stake pool automatically, which is better to do on a seperate node, to keep the `cold-keys` directory and `wallets` secret key files (`wallets/*/*.skey`) completely away from the online nodes.
+
+1. Upload your stake-pool metadata json file ([See example](#metadata-example)) to a host so it is accessible to the public. For example as a [github gist](https://gist.github.com/).
+2. Start a relay node and make it connect to the block-producing node. See the `examples/mc4-relay1.sh` example file.
+3. Start a block-producing node with the `--start`, `--staking` and `--create` arguments, and make it connect to the relay node. See the `examples/mc4-producing.sh` example file.
+4. Wait for the block-producing node to setup and register your pool.
+5. Fund your payment address generated and displayed in Step 4 to finalize the registration.
+
+The docker-compose file `examples/mc4-docker-compose.yaml` will run these 2 containers automatically. Use the command `docker-compose -f mc4-docker-compose.yaml up` to start them.
+
+
+#### Renewing KES keys and certificates
+
+To renew your KES keys and certificates you have to run the `generate_operational_certificate` command in the block-producing container.
+The status window in the block-producing container will tell you when you have to generate new keys.
+
+1. Start the command-line interface in the block-producing container containing the `cold-keys` directory. See `examples/mc4-producing-cli.sh`.
+2. Run the `generate_operational_certificate` command and wait for it to complete.
+3. Restart the block-producing container.
+
+
+## Monitoring
+
 If you want to monitor your nodes using prometheus across different hosts, you can set the environment variable `PROMETHEUS_HOST=0.0.0.0`. This makes the Prometheus service accessible to other hosts. So you can for example run a Prometheus+Grafana service on your relay node, scraping data from the block-producing and relay nodes.
 If you do this, it is EXTREMELY important that you set up a Firewall rule ONLY allowing traffic from your relay nodes host on the Prometheus port, otherwise everyone will be able to monitor your node.
+
 
 ## Metadata example <a id="metadata-example"></a>
 
@@ -216,6 +188,9 @@ You can pass the following arguments to the start up script.
 | Argument | Function |
 | :-- | -- |
 | --start | Start node. |
+| --create | Start Stakepool creation. Initializes Stake Pool keys, addresses and certificates, and sends them to the blockchain, when starting as a stakepool, if it is not already initialized. |
+| --cold-create | Initializes Stake Pool keys, addresses and certificates, and sign registration transactions. Registation transactions has to be sent using the `--cold-register` argument. |
+| --cold-register | Submits the address and pool registration transactions to the blockchain created using the `--cold-create` argument. |
 | --staking | Start as a staking node (Requires the `--start` argument) |
 | --cli | Start command-line interface. |
 | --update | Update the node software. |
@@ -242,7 +217,6 @@ You can pass the following environment variables to the container.
 | PROMETHEUS_PORT | Port of Prometheus monitoring. Default: 12798. |
 | RESOLVE_HOSTNAMES | Resolve topology hostnames to IP-addresses. Default: False. |
 | REPLACE_EXISTING_CONFIG | Reset and replace existing configs. Default: False. |
-| CREATE_STAKEPOOL | Initializes Stake Pool keys, addresses and certificates, and sends them to the blockchain, when starting as a stakepool, if it is not already initialized. Default: False |
 | POOL_PLEDGE | Pledge (lovelace). Default: 100000000000 |
 | POOL_COST | Operational costs per epoch (lovelace). Default: 10000000000 |
 | POOL_MARGIN | Operator margin. Default: 0.05 |
