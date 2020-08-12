@@ -4,7 +4,7 @@ LABEL maintainer="dro@arrakis.it"
 # Install build dependencies
 RUN apt-get update -y \
     && apt-get install -y python3 python3-pip build-essential pkg-config libffi-dev \
-        libgmp-dev libssl-dev libtinfo-dev systemd libsystemd-dev libsodium-dev zlib1g-dev \
+        libgmp-dev libssl-dev libtinfo-dev systemd libsystemd-dev zlib1g-dev libsodium-dev \
         npm yarn make g++ tmux git jq wget libncursesw5 gnupg libtool autoconf \
         vim procps dnsutils bc curl nano cron \
     && apt-get clean
@@ -14,7 +14,7 @@ RUN wget https://downloads.haskell.org/~cabal/cabal-install-3.2.0.0/cabal-instal
     && tar -xf cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz \
     && rm cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz cabal.sig \
     && mv cabal /usr/bin/ \
-    && cabal update
+    && cabal clean && cabal update
 
 # Install GHC
 RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.tar.xz \
@@ -35,19 +35,23 @@ RUN git clone https://github.com/input-output-hk/libsodium \
     && make \
     && make install \
     && make clean
+RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 
 # Install cardano-node
 ARG CARDANO_BRANCH
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH \
-    && export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /cardano-node/ \
     && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --tags \
     && git checkout $CARDANO_BRANCH \
-    && cabal install cardano-node cardano-cli \
-    && rm -rf /root/.cabal/packages
+    && cabal build all
+ARG VERSION
+RUN mkdir -p /root/.cabal/bin/ \
+    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-${VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
+    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
+    && rm -rf /root/.cabal/packages && rm -rf ghc-8.6.5
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
@@ -64,7 +68,6 @@ ENV NODE_PORT="3000" \
     PROMETHEUS_PORT="12798" \
     RESOLVE_HOSTNAMES="False" \
     REPLACE_EXISTING_CONFIG="False" \
-    CREATE_STAKEPOOL="False" \
     POOL_PLEDGE="100000000000" \
     POOL_COST="10000000000" \
     POOL_MARGIN="0.05" \
