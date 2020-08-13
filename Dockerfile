@@ -39,6 +39,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 
 # Install cardano-node
 ARG CARDANO_BRANCH
+ARG VERSION
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH \
     && mkdir -p /cardano-node/ \
@@ -46,12 +47,11 @@ RUN echo "Building $CARDANO_BRANCH..." \
     && cd cardano-node \
     && git fetch --all --tags \
     && git checkout $CARDANO_BRANCH \
-    && cabal build all
-ARG VERSION
-RUN mkdir -p /root/.cabal/bin/ \
+    && cabal build all \
+    && mkdir -p /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-${VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
-    && rm -rf /root/.cabal/packages && rm -rf ghc-8.6.5
+    && rm -rf /root/.cabal/packages && rm -rf ghc-8.6.5 && rm -rf /cardano-node/dist-newstyle/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
@@ -75,7 +75,7 @@ ENV NODE_PORT="3000" \
     PUBLIC_RELAY_IP="TOPOLOGY" \
     WAIT_FOR_SYNC="True" \
     AUTO_TOPOLOGY="True" \
-    PATH="/root/.cabal/bin/:/scripts/:/cardano-node/scripts/:${PATH}" \
+    PATH="/root/.cabal/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}" \
     LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Add config

@@ -16,6 +16,16 @@ cd ${NODE_PATH}/staking/
 echo ""
 echo "Generate operational certificates"
 
+if [ -d "pool-keys/" ]; then
+    source pool-keys/KESPERIOD
+    BACKUPNAME=pool-keys.$(date +%s).tar.gz
+    echo "pool-keys already exist."
+    echo "Created at slot: ${KESSLOT}"
+    echo "Backing up to ${BACKUPNAME} before creating new KES keys."
+    mkdir -p ../backups/
+    tar -zcvf ../backups/${BACKUPNAME} pool-keys/ > /dev/null
+fi
+
 # Create cold key
 if [ ! -f "cold-keys/cold.skey" ]; then
     echo "Creating cold keys."
@@ -30,16 +40,6 @@ if [ ! -f "cold-keys/cold.skey" ]; then
     cardano-cli shelley stake-pool id --verification-key-file cold-keys/cold.vkey > ${NODE_PATH}/staking/POOL_ID
 else
     echo "Cold keys already exists."
-fi
-
-if [ -f "pool-keys/KESPERIOD" ]; then
-    source pool-keys/KESPERIOD
-    BACKUPNAME=pool-keys.${KESSLOT}.tar.gz
-    echo "pool-keys already exist."
-    echo "Created at slot: ${KESSLOT}"
-    echo "Backing up to ${BACKUPNAME} before creating new KES keys."
-    mkdir -p ../backups/
-    tar -zcvf ../backups/${BACKUPNAME} pool-keys/ > /dev/null
 fi
 
 # Create Verifiable Random Function key

@@ -24,12 +24,6 @@ if [ ! -f "${NODE_PATH}/staking/POOL_ID" ]; then
     MISSING_FILES=1
 fi
 
-if [ -z "$(check_pool_registration)" ]; then
-    echo "Pool is not registered in the blockchain. Register the stakepool first."
-    exit
-fi
-
-
 if [ -n "$MISSING_FILES" ]; then
     echo "You are missing required files to start."
     echo "You need to initialize the stake pool keys, addresses and certificates and submit them to the blockchain first."
