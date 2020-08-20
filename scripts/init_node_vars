@@ -1,5 +1,7 @@
 #!/bin/bash
 
 export NODE_PATH=/config/${CARDANO_NETWORK}-${NODE_NAME}/
-export CARDANO_NODE_SOCKET_PATH=${NODE_PATH}node.socket
+if [[ "${CARDANO_NODE_SOCKET_PATH}" == "DEFAULT" ]]; then
+    export CARDANO_NODE_SOCKET_PATH=${NODE_PATH}node.socket
+fi
 source ${NODE_PATH}VARS

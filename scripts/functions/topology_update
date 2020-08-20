@@ -6,6 +6,7 @@ cd ${NODE_PATH}
 
 echo "Updating topology.json using topology updater."
 
+RETRY=$1
 NWMAGIC=$(jq -r .networkMagic < ${NODE_PATH}/shelley-genesis.json)
 CUSTOM_PEERS=$(python3 /scripts/get_topology_str.py)
 
@@ -16,7 +17,11 @@ if [[ "${PRODUCERS}" == "null" ]]; then
     echo "Update of topology.json was unsuccessful."
     cat ${NODE_PATH}/topology.auto.json
 
-    read
+    if [[ -n "$RETRY" ]]; then
+        echo "Submitting IP to topology updater database and retrying fetching the topology."
+        topology_submit
+        topology_update
+    fi
 else
     # Replace topology
     mv ${NODE_PATH}/topology.json ${NODE_PATH}/topology.backup.json

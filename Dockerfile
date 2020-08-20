@@ -34,8 +34,8 @@ RUN git clone https://github.com/input-output-hk/libsodium \
     && ./configure \
     && make \
     && make install \
-    && make clean
-RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+    && make clean \
+    && export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" 
 
 # Install cardano-node
 ARG CARDANO_BRANCH
@@ -76,7 +76,8 @@ ENV NODE_PORT="3000" \
     WAIT_FOR_SYNC="True" \
     AUTO_TOPOLOGY="True" \
     PATH="/root/.cabal/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}" \
-    LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+    LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}" \
+    CARDANO_NODE_SOCKET_PATH="DEFAULT"
 
 # Add config
 ADD cfg-templates/ /cfg-templates/
