@@ -1,7 +1,6 @@
 #!/bin/bash
 
 docker network create -d bridge cardano
-
 docker run -it --rm \
     --network=cardano \
     --name main-producing \
@@ -15,4 +14,4 @@ docker run -it --rm \
     -e CARDANO_NETWORK="main" \
     -e PROMETHEUS_PORT="12798" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --cli
+    arrakis/cardano-node:latest --start --staking

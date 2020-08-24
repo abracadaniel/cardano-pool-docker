@@ -44,5 +44,6 @@ services:
       - PROMETHEUS_PORT=12899
       - PROMETHEUS_HOST=127.0.0.1
       - HOST_ADDR=0.0.0.0
+      - AUTO_TOPOLOGY=False
     command: --start
     restart: unless-stopped

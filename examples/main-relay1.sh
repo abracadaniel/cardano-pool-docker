@@ -1,9 +1,9 @@
 #!/bin/bash
 
 docker network create -d bridge cardano
-
-docker run -it --rm \
-    --networkd=cardano \
+docker run -it \
+    --restart=unless-stopped \
+    --network=cardano \
     --name main-relay1 \
     -p 3000:3000 \
     -p 12798:12798 \
