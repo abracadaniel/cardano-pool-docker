@@ -1,20 +1,21 @@
 from debian:stable-slim
 LABEL maintainer="dro@arrakis.it"
 
+SHELL ["/bin/bash", "-c"]
+
 # Install build dependencies
 RUN apt-get update -y \
-    && apt-get install -y python3 python3-pip build-essential pkg-config libffi-dev \
-        libgmp-dev libssl-dev libtinfo-dev systemd libsystemd-dev zlib1g-dev libsodium-dev \
-        npm yarn make g++ tmux git jq wget libncursesw5 gnupg libtool autoconf \
-        vim procps dnsutils bc curl nano cron \
+    && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 libtool autoconf \
     && apt-get clean
 
 # Install cabal
+ENV PATH="/root/.cabal/bin:/root/.ghcup/bin:/root/.local/bin:$PATH"
 RUN wget https://downloads.haskell.org/~cabal/cabal-install-3.2.0.0/cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz \
     && tar -xf cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz \
     && rm cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz cabal.sig \
-    && mv cabal /usr/bin/ \
-    && cabal clean && cabal update
+    && mkdir -p ~/.local/bin \
+    && mv cabal ~/.local/bin/ \
+    && cabal update && cabal --version
 
 # Install GHC
 RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.tar.xz \
@@ -22,9 +23,7 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && rm ghc-8.6.5-x86_64-deb9-linux.tar.xz \
     && cd ghc-8.6.5 \
     && ./configure \
-    && make install \
-    && cd .. \
-    && rm -rf ghc-8.6.5
+    && make install
 
 # Install libsodium
 RUN git clone https://github.com/input-output-hk/libsodium \
@@ -33,25 +32,31 @@ RUN git clone https://github.com/input-output-hk/libsodium \
     && ./autogen.sh \
     && ./configure \
     && make \
-    && make install \
-    && make clean \
-    && export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" 
+    && make install
+ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
+    PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Install cardano-node
 ARG CARDANO_BRANCH
 ARG VERSION
 RUN echo "Building $CARDANO_BRANCH..." \
     && echo $CARDANO_BRANCH > /CARDANO_BRANCH \
-    && mkdir -p /cardano-node/ \
     && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --tags \
+    && git tag \
     && git checkout $CARDANO_BRANCH \
     && cabal build all \
     && mkdir -p /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-${VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
     && rm -rf /root/.cabal/packages && rm -rf ghc-8.6.5 && rm -rf /cardano-node/dist-newstyle/
+
+# Install tools
+RUN apt-get update -y \
+    && apt-get install -y vim procps dnsutils bc curl nano cron python3 python3-pip \
+    && apt-get clean
+
 
 # Expose ports
 ## cardano-node, EKG, Prometheus

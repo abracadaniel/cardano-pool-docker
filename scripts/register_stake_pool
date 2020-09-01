@@ -61,11 +61,16 @@ case $i in
     --update)
         UPDATE=1
     ;;
+    --no_deleg)
+        NO_DELEG=1
+    ;;
     --cold-create)
         COLD_CREATE=1
     ;;
 esac
 done
+
+EXTRA_FEE=9000
 
 if [ -z "$COLD_CREATE" ]; then
     if [ -z "$UPDATE" ]; then
@@ -107,7 +112,7 @@ fi
 
 # Find UTXO in address with enough lovelace to do the transaction
 ADDRESS=$(cat wallets/owner/payment.addr)
-check_balance $(expr ${POOL_DEPOSIT} + 8000)
+check_balance $(expr ${POOL_DEPOSIT} + ${EXTRA_FEE})
 
 # Multiowners delegation certificates
 if [ -n "$MULTI_OWNERS" ]; then
@@ -121,6 +126,10 @@ if [ -n "$MULTI_OWNERS" ]; then
     echo $MULTIOWNERS_STRING
 fi
 
+if [ -z "$NO_DELEG" ]; then
+    DELEG_CERTS="--certificate-file wallets/owner/delegation.cert ${MULTIOWNERS_CERT_STRING}"
+fi
+
 # Draft transaction
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
@@ -128,9 +137,8 @@ cardano-cli shelley transaction build-raw \
     --ttl 0 \
     --fee 0 \
     --out-file wallets/owner/transactions/register_stake_pool.draft \
-    --certificate-file pool.cert \
-    --certificate-file wallets/owner/delegation.cert \
-    ${MULTIOWNERS_CERT_STRING}
+    --certificate-file pool.cert ${DELEG_CERTS}
+    
 
 ## Calculate the fee
 FEE=$(cardano-cli shelley transaction calculate-min-fee \
@@ -141,7 +149,7 @@ FEE=$(cardano-cli shelley transaction calculate-min-fee \
     --witness-count 1 \
     --byron-witness-count 0 \
     --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
-FEE=$(expr ${FEE} + 8000) # FEE IS TOO SMALL?
+FEE=$(expr ${FEE} + ${EXTRA_FEE}) # FEE IS TOO SMALL?
 TOTAL_PRICE=$(expr ${FEE} + ${POOL_DEPOSIT})
 
 echo "Fee is: ${FEE} Lovelace"

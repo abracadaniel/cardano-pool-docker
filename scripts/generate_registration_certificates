@@ -54,7 +54,7 @@ do
 done
 
 # 1. Create a JSON file with your pool's metadata
-if [ ! -f "metadata.json" ]; then
+if [ ! -f "metadata.json" ] || [ -n "$UPDATE_CERT" ]; then
     if [ -z "$COLD_CREATE" ]; then
         echo "Getting metadata file from ${METADATA_URL}"
         wget -O metadata.json ${METADATA_URL}

@@ -26,6 +26,13 @@ if [ -d "pool-keys/" ]; then
     tar -zcvf ../backups/${BACKUPNAME} pool-keys/ > /dev/null
 fi
 
+if [ -d "cold-keys/" ]; then
+    BACKUPNAME=cold-keys.$(date +%s).tar.gz
+    echo "Backing up to ${BACKUPNAME} before creating new KES keys."
+    mkdir -p ../backups/
+    tar -zcvf ../backups/${BACKUPNAME} cold-keys/ > /dev/null
+fi
+
 # Create cold key
 if [ ! -f "cold-keys/cold.skey" ]; then
     echo "Creating cold keys."
@@ -43,16 +50,20 @@ else
 fi
 
 # Create Verifiable Random Function key
-echo "Generating VRF key"
-cardano-cli shelley node key-gen-VRF \
-    --verification-key-file pool-keys/vrf.vkey \
-    --signing-key-file pool-keys/vrf.skey
+if [ ! -f "pool-keys/vrf.vkey" ]; then
+    echo "Generating VRF key"
+    cardano-cli shelley node key-gen-VRF \
+        --verification-key-file pool-keys/vrf.vkey \
+        --signing-key-file pool-keys/vrf.skey
+fi
 
 # Create Key Evolving Signature key
-echo "Generating KES key"
-cardano-cli shelley node key-gen-KES \
-    --verification-key-file pool-keys/kes.vkey \
-    --signing-key-file pool-keys/kes.skey
+if [ ! -f "pool-keys/kes.vkey" ]; then
+    echo "Generating KES key"
+    cardano-cli shelley node key-gen-KES \
+        --verification-key-file pool-keys/kes.vkey \
+        --signing-key-file pool-keys/kes.skey
+fi
 
 # Get tip
 TIP=$1
@@ -74,6 +85,7 @@ SLOTSPERKESPERIOD=$(jq -r '.slotsPerKESPeriod' ${NODE_PATH}/shelley-genesis.json
 MAXKESEVOLUTIONS=$(jq -r '.maxKESEvolutions' ${NODE_PATH}/shelley-genesis.json)
 MAXKESSLOTS=$(expr ${SLOTSPERKESPERIOD} \* ${MAXKESEVOLUTIONS})
 KESPERIOD=$(expr ${TIP} / ${SLOTSPERKESPERIOD})
+KESPERIOD=$(expr ${KESPERIOD} - 1) # Because of bug in 1.19.0
 EXPIRESLOT=$(expr ${TIP} + ${MAXKESSLOTS})
 echo "export SLOTSPERKESPERIOD=${SLOTSPERKESPERIOD}" > pool-keys/KESPERIOD
 echo "export KESSLOT=${TIP}" >> pool-keys/KESPERIOD
