@@ -44,7 +44,7 @@ fi
 for i in "$@"
 do
     case $i in
-        --update_cert)
+        --update)
             UPDATE_CERT=1
         ;;
         --cold-create)

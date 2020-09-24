@@ -1,14 +1,12 @@
 version: "3"
 services:
   mc4-producing: # block-producing node
-    image: arrakis/cardano-node:latest
+    image: arradev/cardano-node:latest
     container_name: mc4-producing
     network_mode: host
     volumes:
       - $PWD/config/local/:/config
     environment:
-      - PUID=1000
-      - PGID=1001
       - NODE_PORT=3000
       - NODE_NAME=mc4-block-producing
       - NODE_TOPOLOGY=127.0.0.1:3001/1
@@ -27,14 +25,12 @@ services:
     command: --start
     restart: unless-stopped
   mc4-relay1: # relay node
-    image: arrakis/cardano-node:latest
+    image: arradev/cardano-node:latest
     container_name: mc4-relay1
     network_mode: host
     volumes:
       - $PWD/config/local/:/config
     environment:
-      - PUID=1000
-      - PGID=1001
       - NODE_PORT=3001
       - NODE_NAME=mc4-relay1
       - NODE_TOPOLOGY=127.0.0.1:3000/1

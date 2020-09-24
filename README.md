@@ -52,8 +52,6 @@ docker run -it \
     --name main-relay1 \
     -p 3000:3000 \
     -p 12798:12798 \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
     -e NODE_PORT="3000" \
     -e NODE_NAME="relay1" \
     -e NODE_TOPOLOGY="<IP-address of block-producing node>:3000/1" \
@@ -61,7 +59,7 @@ docker run -it \
     -e CARDANO_NETWORK="main" \
     -e PROMETHEUS_PORT="12798" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --start
+    arradev/cardano-node:latest --start
 ```
 
 
@@ -76,8 +74,6 @@ docker run -it --rm \
     --network=cardano \
     -p 3000:3000 \
     -p 12798:12798 \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
     -e NODE_PORT="3000" \
     -e NODE_NAME="registration" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \
@@ -88,7 +84,7 @@ docker run -it --rm \
     -e POOL_MARGIN="0.05" \
     -e METADATA_URL="<URL of metadata.json>" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --start --staking
+    arradev/cardano-node:latest --start --staking
 ```
 
 
@@ -103,15 +99,13 @@ docker run -it --rm \
     --name main-producing \
     -p 3000:3000 \
     -p 12798:12798 \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
     -e NODE_PORT="3000" \
     -e NODE_NAME="block-producing" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \
     -e CARDANO_NETWORK="main" \
     -e PROMETHEUS_PORT="12798" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --start --staking
+    arradev/cardano-node:latest --start --staking
 ```
 
 
@@ -205,8 +199,6 @@ You can pass the following environment variables to the container.
 
 | Variable | Function |
 | :-- | -- |
-| PUID | User ID of user running the container |
-| PGID | Group ID of user running the container |
 | NODE_PORT | Port of node. Default: 3000. |
 | NODE_NAME | Name of node. Default: node1. |
 | NODE_TOPOLOGY | Topology of the node. Should be comma separated for each individual node to add, on the form: \<ip\>:\<port\>/\<valency\>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1. |

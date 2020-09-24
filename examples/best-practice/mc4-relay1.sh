@@ -7,8 +7,6 @@ docker run -it --rm \
     --name mc4-relay1 \
     -p 3001:3001 \
     -p 12798:12798 \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
     -e NODE_PORT="3001" \
     -e NODE_NAME="relay1" \
     -e NODE_TOPOLOGY="<IP-address of relay node>:3000/1" \
@@ -16,4 +14,4 @@ docker run -it --rm \
     -e CARDANO_NETWORK="mc4" \
     -e PROMETHEUS_PORT="12798" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --start
+    arradev/cardano-node:latest --start

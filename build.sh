@@ -1,8 +1,7 @@
 #!/bin/bash
 
-VERSION="1.19.1"
+VERSION="1.20.0"
 docker build \
-    --build-arg CARDANO_BRANCH=tags/${VERSION} \
     --build-arg VERSION=${VERSION} \
-    --tag arrakis/cardano-node:${VERSION} \
-    --tag arrakis/cardano-node:latest .
+    --tag arradev/cardano-node:${VERSION} \
+    --tag arradev/cardano-node:latest .

@@ -5,8 +5,6 @@ docker network create -d bridge cardano
 docker run -it --rm \
     --name mc4-cold-create \
     --network=cardano \
-    -e PUID=$(id -u) \
-    -e PGID=$(id -u) \
     -e CARDANO_NETWORK="mc4" \
     -e NODE_NAME="cold-create" \
     -e POOL_PLEDGE="100000000000" \
@@ -16,4 +14,4 @@ docker run -it --rm \
     -e PUBLIC_RELAY_IP="<Public IP-address of relay node>" \
     -e PUBLIC_RELAY_PORT="3000" \
     -v $PWD/config/:/config/ \
-    arrakis/cardano-node:latest --cold-create
+    arradev/cardano-node:latest --cold-create

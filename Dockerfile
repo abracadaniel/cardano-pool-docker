@@ -23,7 +23,9 @@ RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.ta
     && rm ghc-8.6.5-x86_64-deb9-linux.tar.xz \
     && cd ghc-8.6.5 \
     && ./configure \
-    && make install
+    && make install \
+    && cd / \
+    && rm -rf /ghc-8.6.5
 
 # Install libsodium
 RUN git clone https://github.com/input-output-hk/libsodium \
@@ -32,25 +34,28 @@ RUN git clone https://github.com/input-output-hk/libsodium \
     && ./autogen.sh \
     && ./configure \
     && make \
-    && make install
+    && make install \
+    && cd .. && rm -rf libsodium
 ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Install cardano-node
-ARG CARDANO_BRANCH
 ARG VERSION
-RUN echo "Building $CARDANO_BRANCH..." \
-    && echo $CARDANO_BRANCH > /CARDANO_BRANCH \
+RUN echo "Building tags/$VERSION..." \
+    && echo tags/$VERSION > /CARDANO_BRANCH \
     && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --tags \
     && git tag \
-    && git checkout $CARDANO_BRANCH \
+    && git checkout tags/$VERSION \
     && cabal build all \
     && mkdir -p /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-${VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
     && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
-    && rm -rf /root/.cabal/packages && rm -rf ghc-8.6.5 && rm -rf /cardano-node/dist-newstyle/
+    && rm -rf /root/.cabal/packages \
+    && rm -rf /usr/local/lib/ghc-8.6.5/ \
+    && rm -rf /cardano-node/dist-newstyle/ \ 
+    && rm -rf /root/.cabal/store/ghc-8.6.5
 
 # Install tools
 RUN apt-get update -y \
