@@ -267,12 +267,17 @@ Use these example scripts to see how the nodes can be started.
 
 | Script | Description |
 | :-- | -- |
-| mc4-docker-compose.yaml | docker compose file for running relay node and block-producing node locally on mainnet-candidate4, and initialize and register the stakepool |
-| mc4-relay1.sh | Run relay node locally on mainnet-candidate4. |
-| mc4-producing.sh | Run block-producing node locally on mainnet-candidate4 and initialize and register the it as a stakepool. |
+| test/mc4-docker-compose.yaml | docker compose file for running relay node and block-producing node locally on mainnet-candidate4, and initialize and register the stakepool |
+| best-practice/mc4-relay1.sh | Run relay node locally on mainnet-candidate4. |
+| best-practice/mc4-producing.sh | Run block-producing node locally on mainnet-candidate4 and initialize and register the it as a stakepool. |
+| best-practice/mc4-cold-create.sh | Local cold creation on mainnet-candidate4. |
 | main-relay1.sh | Run relay node locally on mainnet. |
 | main-producing.sh | Run block-producing node on mainnet. |
 | main-registration.sh | Run block-producing node on mainnet and initialize and register the it as a stakepool. |
+
+
+## Docker hub
+Image can be found [here](https://hub.docker.com/repository/docker/arradev/cardano-node).
 
 
 ## Building locally
