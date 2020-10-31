@@ -7,6 +7,7 @@ docker run -it --rm \
     --name mc4-relay1 \
     -p 3001:3001 \
     -p 12798:12798 \
+    -e HOST_ADDR="0.0.0.0" \
     -e NODE_PORT="3001" \
     -e NODE_NAME="relay1" \
     -e NODE_TOPOLOGY="<IP-address of relay node>:3000/1" \

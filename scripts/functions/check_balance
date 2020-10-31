@@ -6,11 +6,12 @@ function check_balance {
             echo ""
             echo "Checking balance for address ${ADDRESS}."
             echo ""
-
+            
+            TOTAL_LOVELACE=0
             cardano-cli shelley query utxo \
                 ${NETWORK_ARGUMENT} \
                 --address ${ADDRESS}
-
+            
             UTXOS=$(cardano-cli shelley query utxo \
                 ${NETWORK_ARGUMENT} \
                 --address ${ADDRESS} | tail -n +3)
@@ -18,13 +19,13 @@ function check_balance {
             while IFS= read -r line ; do
                 arr=(${line})
                 LOVELACE=${arr[2]}
+                TOTAL_LOVELACE=$(expr ${TOTAL_LOVELACE} + ${LOVELACE})
 
                 if [ -n "${LOVELACE}" ]; then
                     echo "${arr[0]}#${arr[1]}: ${arr[2]}"
                     if [ "$LOVELACE" -ge "$PRICE" ]; then
                         UTXO=${arr[0]}
                         TXIX=${arr[1]}
-                        break
                     fi
                 fi
             done <<< "${UTXOS}"
@@ -38,7 +39,7 @@ function check_balance {
                 break
             fi
             
-            echo "You need to fund your address with atleast ${PRICE} Lovelace to register the key."
+            echo "You need to fund your address with atleast ${PRICE} Lovelace to continue with the transaction."
             echo "Your payment address is:"
             echo "${ADDRESS}"
             echo ""

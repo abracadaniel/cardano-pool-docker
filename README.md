@@ -50,6 +50,7 @@ docker run -it \
     --restart=unless-stopped \
     --network=cardano \
     --name main-relay1 \
+    -e HOST_ADDR="0.0.0.0" \
     -p 3000:3000 \
     -p 12798:12798 \
     -e NODE_PORT="3000" \
@@ -72,8 +73,6 @@ docker network create -d bridge cardano
 docker run -it --rm \
     --name main-registration \
     --network=cardano \
-    -p 3000:3000 \
-    -p 12798:12798 \
     -e NODE_PORT="3000" \
     -e NODE_NAME="registration" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \
@@ -99,6 +98,7 @@ docker run -it --rm \
     --name main-producing \
     -p 3000:3000 \
     -p 12798:12798 \
+    -e HOST_ADDR="0.0.0.0" \
     -e NODE_PORT="3000" \
     -e NODE_NAME="block-producing" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+
+WALLET=$1
+
+if [ -z "$WALLET" ]; then
+    echo "Invalid wallet."
+    MISSING_ARG=1
+fi
+
+if [ -n "$MISSING_ARG" ]; then
+    exit
+fi
+
+# Check for required files
+if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ -n "$MISSING_FILES" ]; then
+    exit
+fi
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+ADDRESS=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/payment.addr)
+
+cardano-cli shelley query utxo \
+	${NETWORK_ARGUMENT} \
+	--address ${ADDRESS}

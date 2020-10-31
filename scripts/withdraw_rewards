@@ -3,22 +3,10 @@
 source /scripts/functions/check_balance
 
 WALLET=$1
-TO_ADDR=$2
-SEND_ADA=$3
 TIMESTAMP=$(date +%s)
 
 if [ -z "$WALLET" ]; then
     echo "Invalid wallet."
-    MISSING_ARG=1
-fi
-
-if [ -z "$TO_ADDR" ]; then
-    echo "Invalid recipient address."
-    MISSING_ARG=1
-fi
-
-if [ -z "$SEND_ADA" ]; then
-    echo "Missing ADA amount."
     MISSING_ARG=1
 fi
 
@@ -34,6 +22,16 @@ fi
 
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
     echo "Missing required payment.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/stake.addr" ]; then
+    echo "Missing required stake.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/stake.skey" ]; then
+    echo "Missing required stake.skey. You need to run \`generate_waller ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -54,59 +52,56 @@ cardano-cli shelley query protocol-parameters \
     --out-file ${NODE_PATH}/staking/protocol.json
 
 ADDRESS=$(cat payment.addr)
-SEND_LOVELACE=$(expr ${SEND_ADA} \* 1000000) # Convert ADA to Lovelace
-check_balance $SEND_LOVELACE
+STAKE_ADDRESS=$(cat stake.addr)
+REWARD_BALANCE=$(cardano-cli shelley query stake-address-info --mainnet --address $(cat stake.addr) | jq -r ".[0].rewardAccountBalance")
+check_balance 200000 # Dummy transaction fee
 
 # Draft transaction
+echo "Draft transaction"
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${TO_ADDR}+0 \
     --tx-out ${ADDRESS}+0 \
+    --withdrawal ${STAKE_ADDRESS}+${REWARD_BALANCE} \
     --ttl 0 \
     --fee 0 \
     --out-file transactions/tx.${TIMESTAMP}.draft
 
+echo "Calculate fee"
 FEE=$(cardano-cli shelley transaction calculate-min-fee \
     --tx-body-file transactions/tx.${TIMESTAMP}.draft \
     --tx-in-count 1 \
-    --tx-out-count 2 \
+    --tx-out-count 1 \
     ${NETWORK_ARGUMENT} \
     --witness-count 1 \
     --byron-witness-count 0 \
     --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
 
-TOTAL_PRICE=$(expr ${FEE} + ${SEND_LOVELACE})
-
 # Find UTXO in address with enough lovelace to do the transaction
-check_balance ${TOTAL_PRICE}
+check_balance ${FEE}
 
 # Update slot and TTL
 SLOT=$(get_slot)
 TTL=$(expr ${SLOT} + 500)
 
 # Display transaction info
-REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
-echo "Creating transaction"
+BALANCE_AFTER_TX=$(expr ${LOVELACE} + ${REWARD_BALANCE} - ${FEE})
+echo "Creating rewards withdrawal transaction"
 echo "Current tip Slot: ${SLOT}"
 echo "TTL: ${TTL}"
-echo ""
-echo "$SEND_ADA ADA is ${SEND_LOVELACE} Lovelace"
-echo "From wallet: ${WALLET}"
-echo "From address: ${ADDRESS}"
-echo "To address: ${TO_ADDR}"
-echo "Send amount: ${SEND_LOVELACE} Lovelace"
+echo "Withdrawing rewards from: ${STAKE_ADDRESS}"
+echo "Withdrawing rewards to: ${ADDRESS}"
 echo "Fee is: ${FEE} Lovelace"
-echo "Total amount is: ${TOTAL_PRICE} Lovelace"
-echo "Balance after transaction: ${REMAINING_AFTER_TX} Lovelace"
+echo "Rewards amount: ${REWARD_BALANCE} Lovelace"
+echo "Lovelace before withdrawal: ${LOVELACE}"
+echo "Lovelace after withdrawal: ${BALANCE_AFTER_TX}"
 
 #
 # Create the transaction
 #
-echo "Create transaction"
 cardano-cli shelley transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${TO_ADDR}+${SEND_LOVELACE} \
-    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+    --tx-out ${ADDRESS}+${BALANCE_AFTER_TX} \
+    --withdrawal ${STAKE_ADDRESS}+${REWARD_BALANCE} \
     --ttl ${TTL} \
     --fee ${FEE} \
     --out-file transactions/tx.${TIMESTAMP}.raw
@@ -114,6 +109,7 @@ cardano-cli shelley transaction build-raw \
 cardano-cli shelley transaction sign \
     --tx-body-file transactions/tx.${TIMESTAMP}.raw \
     --signing-key-file payment.skey \
+    --signing-key-file stake.skey \
     ${NETWORK_ARGUMENT} \
     --out-file transactions/tx.${TIMESTAMP}.signed
 

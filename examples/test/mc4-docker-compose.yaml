@@ -7,6 +7,7 @@ services:
     volumes:
       - $PWD/config/local/:/config
     environment:
+      - HOST_ADDR=0.0.0.0
       - NODE_PORT=3000
       - NODE_NAME=mc4-block-producing
       - NODE_TOPOLOGY=127.0.0.1:3001/1
@@ -31,6 +32,7 @@ services:
     volumes:
       - $PWD/config/local/:/config
     environment:
+      - HOST_ADDR=0.0.0.0
       - NODE_PORT=3001
       - NODE_NAME=mc4-relay1
       - NODE_TOPOLOGY=127.0.0.1:3000/1
