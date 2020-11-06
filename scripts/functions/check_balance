@@ -26,11 +26,13 @@ function check_balance {
                     if [ "$LOVELACE" -ge "$PRICE" ]; then
                         UTXO=${arr[0]}
                         TXIX=${arr[1]}
+                        LOVELACE_FOR_UTXO_TXIX=$LOVELACE
                     fi
                 fi
             done <<< "${UTXOS}"
 
             if [ -n "${UTXO}" ]; then
+                LOVELACE=$LOVELACE_FOR_UTXO_TXIX
                 echo "Address is successfully funded."
                 echo ""
                 echo "Got UTXO"
