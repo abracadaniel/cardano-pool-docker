@@ -1,0 +1,5 @@
+function wait_for_file {
+    FILE=$1
+
+    while [ ! -f ${FILE} ]; do sleep 1; done
+}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.21.1"
+VERSION="1.24.2"
 docker build \
     --build-arg VERSION=${VERSION} \
     --tag arradev/cardano-node:${VERSION} \
