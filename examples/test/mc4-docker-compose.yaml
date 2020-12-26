@@ -1,7 +1,9 @@
-version: "3"
+version: "3.3"
 services:
   mc4-producing: # block-producing node
     image: arradev/cardano-node:latest
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     container_name: mc4-producing
     network_mode: host
     volumes:
@@ -16,7 +18,6 @@ services:
       - EKG_PORT=12888
       - PROMETHEUS_PORT=12898
       - PROMETHEUS_HOST=127.0.0.1
-      - HOST_ADDR=127.0.0.1
       - POOL_PLEDGE=100000000000
       - POOL_COST=1000000000
       - POOL_MARGIN=0.05
@@ -27,6 +28,8 @@ services:
     restart: unless-stopped
   mc4-relay1: # relay node
     image: arradev/cardano-node:latest
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     container_name: mc4-relay1
     network_mode: host
     volumes:
@@ -41,7 +44,6 @@ services:
       - EKG_PORT=12889
       - PROMETHEUS_PORT=12899
       - PROMETHEUS_HOST=127.0.0.1
-      - HOST_ADDR=0.0.0.0
       - AUTO_TOPOLOGY=False
     command: --start
     restart: unless-stopped
