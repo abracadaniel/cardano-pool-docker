@@ -39,12 +39,12 @@ if [ ! -f "cold-keys/cold.skey" ]; then
     echo "Warning: The cold keys should NOT be kept on your server. You should backup your cold keys and delete them from the server."
     echo "Alternatively you can generate the keys on a seperate offline node, and move all the neccessary certificates and keys to the active staking node."
     
-    cardano-cli shelley node key-gen \
+    cardano-cli node key-gen \
         --cold-verification-key-file cold-keys/cold.vkey \
         --cold-signing-key-file cold-keys/cold.skey \
         --operational-certificate-issue-counter-file cold-keys/cold.counter
 
-    cardano-cli shelley stake-pool id --verification-key-file cold-keys/cold.vkey > ${NODE_PATH}/staking/POOL_ID
+    cardano-cli stake-pool id --verification-key-file cold-keys/cold.vkey > ${NODE_PATH}/staking/POOL_ID
 else
     echo "Cold keys already exists."
 fi
@@ -52,7 +52,7 @@ fi
 # Create Verifiable Random Function key
 if [ ! -f "pool-keys/vrf.vkey" ]; then
     echo "Generating VRF key"
-    cardano-cli shelley node key-gen-VRF \
+    cardano-cli node key-gen-VRF \
         --verification-key-file pool-keys/vrf.vkey \
         --signing-key-file pool-keys/vrf.skey
 fi
@@ -60,7 +60,7 @@ fi
 # Create Key Evolving Signature key
 if [ ! -f "pool-keys/kes.vkey" ]; then
     echo "Generating KES key"
-    cardano-cli shelley node key-gen-KES \
+    cardano-cli node key-gen-KES \
         --verification-key-file pool-keys/kes.vkey \
         --signing-key-file pool-keys/kes.skey
 fi
@@ -101,7 +101,7 @@ echo "MaxKESSlots: ${MAXKESSLOTS}"
 echo "KESExpireSlot: ${EXPIRESLOT}"
 
 # Create an operational node certificate
-cardano-cli shelley node issue-op-cert \
+cardano-cli node issue-op-cert \
     --kes-verification-key-file pool-keys/kes.vkey \
     --cold-signing-key-file cold-keys/cold.skey \
     --operational-certificate-issue-counter cold-keys/cold.counter \

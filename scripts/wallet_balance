@@ -29,6 +29,4 @@ fi
 
 ADDRESS=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/payment.addr)
 
-cardano-cli shelley query utxo \
-	${NETWORK_ARGUMENT} \
-	--address ${ADDRESS}
+cardano-cli query utxo ${NETWORK_ARGUMENT} --allegra-era --address ${ADDRESS}

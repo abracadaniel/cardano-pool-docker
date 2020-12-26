@@ -2,5 +2,5 @@ function check_address_registration {
     source /scripts/init_node_vars
     
     STAKE_ADDR=$1
-    cardano-cli shelley query stake-address-info --address ${STAKE_ADDR} ${NETWORK_ARGUMENT} | grep -v {}
+    cardano-cli query stake-address-info --address ${STAKE_ADDR} ${NETWORK_ARGUMENT} --allegra-era | grep -v {}
 }

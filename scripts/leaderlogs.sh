@@ -1,12 +1,14 @@
 #!/bin/bash
 
+source /scripts/init_node_vars
+
 # Init vars
 POOL_ID=$(cat ${NODE_PATH}staking/POOL_ID)
 TZ=$(cat /etc/timezone)
 VRF=${NODE_PATH}staking/pool-keys/vrf.skey
 
 echo "Dumping ledger.json"
-cardano-cli shelley query ledger-state --mainnet --out-file ${NODE_PATH}ledger.json
+cardano-cli query ledger-state --allegra-era ${NETWORK_ARGUMENT} --out-file ${NODE_PATH}ledger.json
 
 echo "Calculating sigma"
 SIGMA=$(python3 /scripts/pooltool.io/leaderLogs/getSigma.py --pool-id ${POOL_ID} --ledger ${NODE_PATH}ledger.json | tail -1 | awk '{print $2}')

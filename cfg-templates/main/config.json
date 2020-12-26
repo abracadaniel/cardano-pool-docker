@@ -4,7 +4,7 @@
   "ByronGenesisFile": "mainnet-byron-genesis.json",
   "ByronGenesisHash": "5f20df933584822601f9e3f8c024eb5eb252fe8cefb24d1317dc3d432e940ebb",
   "LastKnownBlockVersion-Alt": 0,
-  "LastKnownBlockVersion-Major": 2,
+  "LastKnownBlockVersion-Major": 3,
   "LastKnownBlockVersion-Minor": 0,
   "MaxKnownMajorProtocolVersion": 2,
   "Protocol": "Cardano",
@@ -40,7 +40,6 @@
   "TracingVerbosity": "NormalVerbosity",
   "TurnOnLogMetrics": true,
   "TurnOnLogging": true,
-  "ViewMode": "SimpleView",
   "defaultBackends": [
     "KatipBK"
   ],
@@ -59,35 +58,22 @@
   "options": {
     "mapBackends": {
       "cardano.node-metrics": [
-        "EKGViewBK",
-        {
-          "kind": "UserDefinedBK",
-          "name": "LiveViewBackend"
-        }
+        "EKGViewBK"
       ],
       "cardano.node.BlockFetchDecision.peers": [
-        "EKGViewBK",
-        {
-          "kind": "UserDefinedBK",
-          "name": "LiveViewBackend"
-        }
+        "EKGViewBK"
       ],
       "cardano.node.ChainDB.metrics": [
-        "EKGViewBK",
-        {
-          "kind": "UserDefinedBK",
-          "name": "LiveViewBackend"
-        }
+        "EKGViewBK"
       ],
       "cardano.node.Forge.metrics": [
         "EKGViewBK"
       ],
       "cardano.node.metrics": [
-        "EKGViewBK",
-        {
-          "kind": "UserDefinedBK",
-          "name": "LiveViewBackend"
-        }
+        "EKGViewBK"
+      ],
+      "cardano.node.resources": [
+        "EKGViewBK"
       ]
     },
     "mapSubtrace": {

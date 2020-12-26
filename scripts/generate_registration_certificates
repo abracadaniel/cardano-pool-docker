@@ -65,7 +65,7 @@ fi
 
 # 2. get hash of file
 echo "Getting hash of metadata.json"
-METADATA_HASH=$(cardano-cli shelley stake-pool metadata-hash --pool-metadata-file metadata.json)
+METADATA_HASH=$(cardano-cli stake-pool metadata-hash --pool-metadata-file metadata.json)
 echo "metadata.json hash: ${METADATA_HASH}"
 
 # 3. Generate Stake pool registration certificate
@@ -103,7 +103,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         echo ""
     fi
 
-    cardano-cli shelley stake-pool registration-certificate \
+    cardano-cli stake-pool registration-certificate \
         --cold-verification-key-file cold-keys/cold.vkey \
         --vrf-verification-key-file pool-keys/vrf.vkey \
         --pool-pledge ${POOL_PLEDGE} \
@@ -139,7 +139,7 @@ fi
 
 # 2. Generate delegation certificate (pledge)
 if [ ! -f "wallets/owner/delegation.cert" ]; then
-    cardano-cli shelley stake-address delegation-certificate \
+    cardano-cli stake-address delegation-certificate \
         --stake-verification-key-file wallets/owner/stake.vkey \
         --cold-verification-key-file cold-keys/cold.vkey \
         --out-file wallets/owner/delegation.cert \
@@ -155,7 +155,7 @@ if [ -n "$MULTI_OWNERS" ]; then
     do
         echo "- $i"
         if [ ! -f "wallets/$i/delegation.cert" ]; then
-            cardano-cli shelley stake-address delegation-certificate \
+            cardano-cli stake-address delegation-certificate \
                 --stake-verification-key-file wallets/$i/stake.vkey \
                 --cold-verification-key-file cold-keys/cold.vkey \
                 --out-file wallets/$i/delegation.cert \

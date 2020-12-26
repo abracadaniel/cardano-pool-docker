@@ -3,5 +3,5 @@
 # Init vars
 source /scripts/init_node_vars
 
-BLOCK=$(cardano-cli shelley query tip ${NETWORK_ARGUMENT} | jq -r '.blockNo')
+BLOCK=$(cardano-cli query tip ${NETWORK_ARGUMENT} | jq -r '.blockNo')
 echo "${BLOCK}"
