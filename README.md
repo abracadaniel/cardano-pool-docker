@@ -73,6 +73,7 @@ docker network create -d bridge cardano
 docker run -it --rm \
     --name main-registration \
     --network=cardano \
+    -e HOST_ADDR="0.0.0.0" \
     -e NODE_PORT="3000" \
     -e NODE_NAME="registration" \
     -e NODE_TOPOLOGY="<IP-address of relay1 node>:3000/1" \
