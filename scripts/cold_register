@@ -49,7 +49,7 @@ function submit_stake_addr {
 
 # Check for staking-hot.tar.gz
 if [ ! -f "${NODE_PATH}/staking-hot.tar.gz" ]; then
-    echo "Missing required ${NODE_PATH}staking-hot.tar.gz file. First run with the \`--cold-register\` argument on a secure offline node."
+    echo "Missing required ${NODE_PATH}/staking-hot.tar.gz file. First run with the \`--cold-register\` argument on a secure offline node."
     read -n 1 -r -s -p "If you already have generated the file, please place it in its correct place, and press ENTER to continue."
 fi
 
@@ -99,7 +99,7 @@ then
 else
     echo "Transaction has been submitted to the blockchain."
     echo ${OUT}
-    
+
     echo "Wait for blockchain to register the pool"
     wait_for_pool_registration
     echo "Your stake pool registration has been sent to the blockchain."
