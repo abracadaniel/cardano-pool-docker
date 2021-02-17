@@ -21,17 +21,17 @@ echo "Submitting stake pool certificates to the blockchain."
 
 # Check for required files
 if [ ! -f "wallets/owner/stake.skey" ]; then
-    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_wallet owner\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "wallets/owner/payment.skey" ]; then
-    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_wallet owner\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "wallets/owner/payment.addr" ]; then
-    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_wallet owner\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -138,7 +138,7 @@ cardano-cli transaction build-raw \
     --fee 0 \
     --out-file wallets/owner/transactions/register_stake_pool.draft \
     --certificate-file pool.cert ${DELEG_CERTS}
-    
+
 
 ## Calculate the fee
 FEE=$(cardano-cli transaction calculate-min-fee \

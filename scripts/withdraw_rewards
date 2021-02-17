@@ -16,22 +16,22 @@ fi
 
 # Check for required files
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    echo "Missing required payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/stake.addr" ]; then
-    echo "Missing required stake.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    echo "Missing required stake.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    echo "Missing required stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
