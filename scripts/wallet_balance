@@ -14,7 +14,7 @@ fi
 
 # Check for required files
 if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_waller ${WALLET}\` to generate this key."
+    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 

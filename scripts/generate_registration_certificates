@@ -17,7 +17,7 @@ echo "Generate registration certificates"
 
 # Check for required files
 if [ ! -f "wallets/owner/stake.vkey" ]; then
-    echo "Missing required staking/stake.vkey. You need to run \`generate_waller owner\` to generate this key."
+    echo "Missing required staking/stake.vkey. You need to run \`generate_wallet owner\` to generate this key."
     MISSING_FILES=1
 fi
 
