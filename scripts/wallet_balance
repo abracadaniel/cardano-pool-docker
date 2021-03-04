@@ -29,4 +29,4 @@ fi
 
 ADDRESS=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/payment.addr)
 
-cardano-cli query utxo ${NETWORK_ARGUMENT} --allegra-era --address ${ADDRESS}
+cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS}

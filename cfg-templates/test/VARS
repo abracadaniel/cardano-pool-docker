@@ -1,2 +1,3 @@
 export NETWORK_ARGUMENT="--testnet-magic 1097911063"
+export ERA_ARGUMENT="--mary-era"
 export HARDFORK_EPOCH=1

@@ -90,7 +90,7 @@ fi
 # Generate protocol
 if [ -z "$COLD_CREATE" ]; then
     cardano-cli query protocol-parameters \
-        ${NETWORK_ARGUMENT} --allegra-era \
+        ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} \
         --out-file ${NODE_PATH}/staking/protocol.json
 else
     if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
@@ -172,7 +172,7 @@ cardano-cli transaction sign \
 # Submit the transaction
 if [ -z "$COLD_CREATE" ]; then
     read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
-    
+
     OUT=$(cardano-cli transaction submit \
         --tx-file transactions/register_stake_address.signed \
         ${NETWORK_ARGUMENT} 2>&1)
