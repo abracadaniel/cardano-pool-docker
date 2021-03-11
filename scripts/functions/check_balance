@@ -6,11 +6,11 @@ function check_balance {
             echo ""
             echo "Checking balance for address ${ADDRESS}."
             echo ""
-            
+
             TOTAL_LOVELACE=0
-            cardano-cli query utxo ${NETWORK_ARGUMENT} --allegra-era --address ${ADDRESS}
-            
-            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} --allegra-era --address ${ADDRESS} | tail -n +3)
+            cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS}
+
+            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS} | tail -n +3)
             echo "UTXO#TXIX: LOVELACE"
             while IFS= read -r line ; do
                 arr=(${line})
@@ -36,7 +36,7 @@ function check_balance {
                 echo "Lovelace Holding: ${LOVELACE}"
                 break
             fi
-            
+
             echo "You need to fund your address with atleast ${PRICE} Lovelace to continue with the transaction."
             echo "Your payment address is:"
             echo "${ADDRESS}"
@@ -49,7 +49,7 @@ function check_balance {
         done
     else
         echo "Find UTXO and TXIX containing atleast ${PRICE} Lovelace for address ${ADDRESS} (Wallet ${WALLET})"
-        echo "Run \`cardano-cli query utxo ${NETWORK_ARGUMENT} --allegra-era --address ${ADDRESS}\`, on online node to find the values."
+        echo "Run \`cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS}\`, on online node to find the values."
         read -p "Enter the UTXO: " UTXO
         read -p "Enter the TXIX: " TXIX
         LOVELACE=0

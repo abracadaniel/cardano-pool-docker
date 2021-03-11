@@ -1,6 +1,6 @@
 function check_pool_registration {
     source /scripts/init_node_vars
-    
+
     POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
-    cardano-cli query ledger-state --allegra-era ${NETWORK_ARGUMENT} | grep publicKey | grep ${POOL_ID}
+    cardano-cli query ledger-state ${ERA_ARGUMENT} ${NETWORK_ARGUMENT} | grep publicKey | grep ${POOL_ID}
 }

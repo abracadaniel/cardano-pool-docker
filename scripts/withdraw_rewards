@@ -48,12 +48,12 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
 fi
 
 cardano-cli query protocol-parameters \
-    ${NETWORK_ARGUMENT} --allegra-era \
+    ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} \
     --out-file ${NODE_PATH}/staking/protocol.json
 
 ADDRESS=$(cat payment.addr)
 STAKE_ADDRESS=$(cat stake.addr)
-REWARD_BALANCE=$(cardano-cli query stake-address-info ${NETWORK_ARGUMENT} --allegra-era --address $(cat stake.addr) | jq -r ".[0].rewardAccountBalance")
+REWARD_BALANCE=$(cardano-cli query stake-address-info ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address $(cat stake.addr) | jq -r ".[0].rewardAccountBalance")
 check_balance 200000 # Dummy transaction fee
 
 # Draft transaction
