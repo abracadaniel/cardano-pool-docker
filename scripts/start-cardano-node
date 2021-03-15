@@ -1,5 +1,7 @@
 #!/bin/bash
 
+/scripts/setup_bashrc
+
 # Include functions
 source /scripts/init_node_vars
 source /scripts/functions/run_node
