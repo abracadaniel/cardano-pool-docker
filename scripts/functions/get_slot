@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Init vars
 source /scripts/init_node_vars
 
 SLOT=$(cardano-cli query tip ${NETWORK_ARGUMENT} | jq -r '.slotNo')
