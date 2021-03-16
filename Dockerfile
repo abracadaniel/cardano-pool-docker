@@ -124,7 +124,8 @@ ENV NODE_PORT="3000" \
     AUTO_TOPOLOGY="True" \
     PATH="/root/.local/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}" \
     LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}" \
-    CARDANO_NODE_SOCKET_PATH="DEFAULT"
+    CARDANO_NODE_SOCKET_PATH="DEFAULT" \
+    LANG="C.UTF-8"
 
 # Add config
 ADD cfg-templates/ /cfg-templates/
