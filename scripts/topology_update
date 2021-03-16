@@ -8,14 +8,8 @@ for i in "$@"; do
       --retry)
         RETRY=1
       ;;
-      --read)
-        READ=1
-      ;;
   esac
 done
-
-CHECK_MARK="\u2705"
-CROSS_MARK="\u274c"
 
 source /scripts/functions/get_public_ip
 
@@ -50,9 +44,5 @@ else
         echo -en "\nRestarting cardano-node ..."
         killall -9 cardano-node
         echo -e " ${CHECK_MARK} Done."
-    fi
-
-    if [[ -n "$READ" ]]; then
-        read
     fi
 fi
