@@ -1,0 +1,8 @@
+echo "export PATH=$PATH:/root/.local/bin" > /root/.bashrc
+echo "export CARDANO_NETWORK=${CARDANO_NETWORK}" >> /root/.bashrc
+echo "export CARDANO_NODE_SOCKET_PATH=${CARDANO_NODE_SOCKET_PATH}" >> /root/.bashrc
+echo "export NODE_NAME=${NODE_NAME}" >> /root/.bashrc
+echo "export NODE_PORT=${NODE_PORT}" >> /root/.bashrc
+echo "export WAIT_FOR_SYNC=${WAIT_FOR_SYNC}" >> /root/.bashrc
+echo "export NODE_TOPOLOGY=${NODE_TOPOLOGY}" >> /root/.bashrc
+echo "source /scripts/init_node_vars" >> /root/.bashrc

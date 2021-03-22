@@ -1,10 +1,10 @@
 function auto_topology_start {
-    # Add topology_submit to crontab
-    echo "Starting crontab."
+    echo "Schduling topology cronjobs."
     cp /cfg-templates/crontab /crontab
     service cron start
     crontab /crontab
+    echo -e "\n"
 
     # Update topology.json
-    topology_update 1
+    topology_update --retry
 }

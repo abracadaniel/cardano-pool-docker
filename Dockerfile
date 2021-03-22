@@ -84,13 +84,13 @@ RUN echo "Building tags/$VERSION..." \
     && cp -p dist-newstyle/build/x86_64-linux/ghc-8.10.2/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.local/bin/ \
     && rm -rf /root/.cabal/packages \
     && rm -rf /usr/local/lib/ghc-8.6.5/ \
-    && rm -rf /cardano-node/dist-newstyle/ \ 
+    && rm -rf /cardano-node/dist-newstyle/ \
     && rm -rf /root/.cabal/store/ghc-8.6.5
 
 # Install cncli
 #RUN git clone https://github.com/AndrewWestberg/cncli \
 #    && cd cncli \
-#    && cargo install --path . --force \    
+#    && cargo install --path . --force \
 #    && cncli -V \
 #    && cd / && rm -rf cncli
 
@@ -124,7 +124,8 @@ ENV NODE_PORT="3000" \
     AUTO_TOPOLOGY="True" \
     PATH="/root/.local/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}" \
     LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}" \
-    CARDANO_NODE_SOCKET_PATH="DEFAULT"
+    CARDANO_NODE_SOCKET_PATH="DEFAULT" \
+    LANG="C.UTF-8"
 
 # Add config
 ADD cfg-templates/ /cfg-templates/
@@ -132,7 +133,6 @@ RUN mkdir -p /config/
 VOLUME /config/
 
 # Add scripts
-RUN echo "source /scripts/init_node_vars" >> /root/.bashrc
 ADD scripts/ /scripts/
 RUN chmod -R +x /scripts/
 

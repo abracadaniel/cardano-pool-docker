@@ -1,5 +1,7 @@
 #!/bin/bash
 
+/scripts/setup_bashrc
+
 # Include functions
 source /scripts/init_node_vars
 source /scripts/functions/run_node
@@ -115,14 +117,9 @@ if [ -n "$START_NODE" ]; then
         # Start as staking node
         /scripts/start-stakenode
     else
-        # Update topology
-        if [[ "${AUTO_TOPOLOGY}" == "True" ]]; then
-            tmux \
-                new-session  "source /scripts/functions/run_node; run_node" \; \
-                split-window "source /scripts/functions/auto_topology_start; auto_topology_start" \; \
-                select-layout even-horizontal
-        else
-            run_node
-        fi
+        tmux \
+            new-session  "source /scripts/functions/run_node; run_node" \; \
+            split-window "source /scripts/functions/info_pane; info_pane" \; \
+            select-layout even-horizontal
     fi
 fi

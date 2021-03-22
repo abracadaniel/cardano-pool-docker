@@ -4,4 +4,6 @@ export NODE_PATH=/config/${CARDANO_NETWORK}-${NODE_NAME}
 if [[ "${CARDANO_NODE_SOCKET_PATH}" == "DEFAULT" ]]; then
     export CARDANO_NODE_SOCKET_PATH=${NODE_PATH}/node.socket
 fi
+
+source /scripts/logging_vars
 source /cfg-templates/${CARDANO_NETWORK}/VARS

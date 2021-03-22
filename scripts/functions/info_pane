@@ -1,0 +1,11 @@
+#!/bin/bash
+
+function info_pane {
+    source /scripts/functions/auto_topology_start
+    source /scripts/functions/wait_for_sync
+
+    auto_topology_start
+    wait_for_sync 99.98
+
+    read
+}
