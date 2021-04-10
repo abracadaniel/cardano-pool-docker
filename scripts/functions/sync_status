@@ -18,7 +18,7 @@ byron_slots=$(($HARDFORK_EPOCH * byron_epoch_length))
 now=$(date +'%s')
 
 expected_slot=$((byron_slots + (now - byron_end) / slot_length))
-current_slot=$(cardano-cli query tip $NETWORK_ARGUMENT | jq -r '.slotNo')
+current_slot=$(cardano-cli query tip $NETWORK_ARGUMENT | jq -r '.slot')
 percent=$(echo -e "scale=2\n$current_slot * 100 / $expected_slot" | bc)
 
 echo "slot ${current_slot}/${expected_slot} ${percent}%"
