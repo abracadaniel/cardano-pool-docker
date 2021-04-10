@@ -1,3 +1,2 @@
 export NETWORK_ARGUMENT="--mainnet"
-export ERA_ARGUMENT="--mary-era"
 export HARDFORK_EPOCH=208

@@ -8,9 +8,9 @@ function check_balance {
             echo ""
 
             TOTAL_LOVELACE=0
-            cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS}
+            cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}
 
-            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS} | tail -n +3)
+            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS} | tail -n +3)
             echo "UTXO#TXIX: LOVELACE"
             while IFS= read -r line ; do
                 arr=(${line})
@@ -49,7 +49,7 @@ function check_balance {
         done
     else
         echo "Find UTXO and TXIX containing atleast ${PRICE} Lovelace for address ${ADDRESS} (Wallet ${WALLET})"
-        echo "Run \`cardano-cli query utxo ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --address ${ADDRESS}\`, on online node to find the values."
+        echo "Run \`cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}\`, on online node to find the values."
         read -p "Enter the UTXO: " UTXO
         read -p "Enter the TXIX: " TXIX
         LOVELACE=0

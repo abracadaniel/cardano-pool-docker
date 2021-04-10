@@ -50,7 +50,7 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
 fi
 
 cardano-cli query protocol-parameters \
-    ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} \
+    ${NETWORK_ARGUMENT} \
     --out-file ${NODE_PATH}/staking/protocol.json
 
 ADDRESS=$(cat payment.addr)

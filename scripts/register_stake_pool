@@ -95,7 +95,7 @@ fi
 # Generate protocol
 if [ -z "$COLD_CREATE" ]; then
     cardano-cli query protocol-parameters \
-        ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} \
+        ${NETWORK_ARGUMENT} \
         --out-file ${NODE_PATH}/staking/protocol.json
 else
     if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then

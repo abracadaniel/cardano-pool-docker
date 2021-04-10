@@ -3,4 +3,4 @@
 # Init vars
 source /scripts/init_node_vars
 
-cardano-cli query protocol-parameters ${NETWORK_ARGUMENT} ${ERA_ARGUMENT} --out-file protocol.json
+cardano-cli query protocol-parameters ${NETWORK_ARGUMENT} --out-file protocol.json
