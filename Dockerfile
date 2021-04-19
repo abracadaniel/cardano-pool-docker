@@ -88,11 +88,10 @@ RUN echo "Building tags/$VERSION..." \
     && rm -rf /root/.cabal/store/ghc-8.6.5
 
 # Install cncli
-#RUN git clone https://github.com/AndrewWestberg/cncli \
-#    && cd cncli \
-#    && cargo install --path . --force \
-#    && cncli -V \
-#    && cd / && rm -rf cncli
+RUN git clone https://github.com/AndrewWestberg/cncli \
+    && cd cncli \
+    && cargo install --path . --force \
+    && cncli -V
 
 # Install tools
 RUN apt-get update -y \
@@ -111,7 +110,6 @@ ENV NODE_PORT="3000" \
     NODE_RELAY="False" \
     CARDANO_NETWORK="main" \
     EKG_PORT="12788" \
-    PROMETHEUS_HOST="127.0.0.1" \
     PROMETHEUS_PORT="12798" \
     RESOLVE_HOSTNAMES="False" \
     REPLACE_EXISTING_CONFIG="False" \
