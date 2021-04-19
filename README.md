@@ -84,7 +84,7 @@ docker run -it --rm \
     -e POOL_MARGIN="0.05" \
     -e METADATA_URL="<URL of metadata.json>" \
     -v $PWD/config/:/config/ \
-    arradev/cardano-node:latest --start --staking
+    arradev/cardano-node:latest --create --staking
 ```
 
 
