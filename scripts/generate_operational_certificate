@@ -44,7 +44,7 @@ if [ ! -f "cold-keys/cold.skey" ]; then
         --cold-signing-key-file cold-keys/cold.skey \
         --operational-certificate-issue-counter-file cold-keys/cold.counter
 
-    cardano-cli stake-pool id --verification-key-file cold-keys/cold.vkey > ${NODE_PATH}/staking/POOL_ID
+    cardano-cli stake-pool id --cold-verification-key-file cold-keys/cold.vkey --output-format hex > ${NODE_PATH}/staking/POOL_ID
 else
     echo "Cold keys already exists."
 fi

@@ -1,0 +1,47 @@
+#!/bin/bash
+
+source /scripts/init_node_vars
+source /scripts/functions/wait_for_file
+export WAIT_FOR_SYNC=False
+
+echo "Creating Stake Pool addresses, keys and certificates, to be submitted to the blockchain."
+
+# If staking/ directory exists create a backup
+if [ -d "${NODE_PATH}/staking/" ]; then
+    TIMESTAMP=$(date +%s)
+    BACKUPNAME="staking.${TIMESTAMP}.tar.gz"
+    echo "staking directory already exists."
+    echo "Backing up to ${BACKUPNAME}."
+    mkdir -p ${NODE_PATH}/backups/
+    tar -zcvf ${NODE_PATH}/backups/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
+fi
+
+# Step1: Start creation
+generate_wallet owner
+
+## Generate wallets for multiple owners
+if [ -n "$MULTI_OWNERS" ]; then
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g"); do
+        generate_wallet $i
+    done
+fi
+
+## Create archive
+tar -zcvf ${NODE_PATH}/step1.tar.gz --exclude='*.skey' staking/wallets/
+
+echo "Upload step1.tar.gz to your block-producing node to continue."
+echo "Waiting for step2.tar.gz from your block-producing node..."
+wait_for_file ${NODE_PATH}/step2.tar.gz
+
+
+register_stake_address owner --cold-create
+
+generate_operational_certificate
+generate_registration_certificates --cold-create
+register_stake_pool --cold-create
+
+echo "Archiving required files"
+cd ${NODE_PATH} && tar -zcvf staking-hot.tar.gz --exclude='cold-keys' --exclude='wallets/*/*.skey' staking/
+
+echo "Created all addresses, certificates and transactions. Upload the \`staking-hot.tar.gz\` file to your live node, and submit the registration transaction by running with the \`--cold-register\`."
+read
