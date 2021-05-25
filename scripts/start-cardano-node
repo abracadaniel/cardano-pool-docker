@@ -16,7 +16,6 @@ function help {
     echo "--cold-create                 Initializes Stake Pool keys, addresses and certificates, and sign registration transactions. Registation transactions has to be sent using the \`--cold-register\` argument."
     echo "--cold-register               Submits the address and pool registration transactions to the blockchain created using the \`--cold-create\` argument."
     echo "--cli                         Start command-line interface."
-    echo "--update                      Update the node software."
     echo "--init_config                 Initialize config."
     echo "--help                        Display this message."
     echo "Environment variables:"
@@ -53,8 +52,6 @@ for i in "$@"; do
             help
             break
         ;;
-        --update)
-            /scripts/update-cardano-node
         ;;
         --cli)
             /bin/bash

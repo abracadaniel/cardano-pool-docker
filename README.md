@@ -112,6 +112,7 @@ docker run -it --rm \
 
 ### Best practice
 <details>
+    
     <summary>Click to expand</summary>
     This is an example on how to run your staking pool in a completely secure way, by only keeping your `cold-keys` and `wallets` on a completely offline node, and then transfer all relevant registration transactions and `pool-keys` to the online block-producing node. This requires a bit more steps than the reasonably secure method.
 
@@ -189,7 +190,6 @@ You can pass the following arguments to the start up script.
 | --cold-register | Submits the address and pool registration transactions to the blockchain created using the `--cold-create` argument. |
 | --staking | Start as a staking node (Requires the `--start` argument) |
 | --cli | Start command-line interface. |
-| --update | Update the node software. |
 | --init_config | Initialize config. |
 | --help | see this message. |
 
