@@ -52,7 +52,6 @@ for i in "$@"; do
             help
             break
         ;;
-        ;;
         --cli)
             /bin/bash
             break

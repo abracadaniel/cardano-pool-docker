@@ -105,7 +105,7 @@ fi
 
 # Get pool-deposit
 if [ -z "$UPDATE" ]; then
-    POOL_DEPOSIT=$(jq -r .poolDeposit protocol.json)
+    POOL_DEPOSIT=$(jq -r .stakePoolDeposit protocol.json)
 else
     POOL_DEPOSIT=0
 fi

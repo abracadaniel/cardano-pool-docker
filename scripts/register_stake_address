@@ -99,9 +99,7 @@ else
 fi
 
 # Get key-deposit
-KEY_DEPOSIT=$(jq -r .keyDeposit ${NODE_PATH}/staking/protocol.json)
-POOL_DEPOSIT=$(jq -r .poolDeposit ${NODE_PATH}/staking/protocol.json)
-MIN_HOLDING=$(expr $KEY_DEPOSIT + $POOL_DEPOSIT + $POOL_PLEDGE)
+KEY_DEPOSIT=$(jq -r .stakeAddressDeposit ${NODE_PATH}/staking/protocol.json)
 
 # Find UTXO in address with enough lovelace to do the transaction
 ADDRESS=$(cat payment.addr)
