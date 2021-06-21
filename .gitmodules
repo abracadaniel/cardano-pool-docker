@@ -1,0 +1,3 @@
+[submodule "scripts/pooltool.io"]
+	path = scripts/pooltool.io
+	url = ../../papacarp/pooltool.io
