@@ -1,66 +1,114 @@
 #!/bin/bash
 
-# Following guide:
-# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/020_keys_and_addresses.md
-
 # Init node vars
 source /scripts/init_node_vars
 
-WALLET=$1
-mkdir -p ${NODE_PATH}/staking/wallets/${WALLET}
-cd ${NODE_PATH}/staking/wallets/${WALLET}
+walletName="$1" # eg. wallet/name/name
+mkdir -p ${NODE_PATH}/staking/wallets/${walletName}
+cd ${NODE_PATH}/staking/wallets/${walletName}
 
-echo ""
-echo "Generate stake addresses"
+if [ -f "phrase.txt"   ]; then echo -e "\033[35mWARNING - phrase.txt already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "root.prv"     ]; then echo -e "\033[35mWARNING - root.prv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "payment.xprv" ]; then echo -e "\033[35mWARNING - payment.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "payment.xpub" ]; then echo -e "\033[35mWARNING - payment.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "staking.xprv" ]; then echo -e "\033[35mWARNING - staking.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "staking.xpub" ]; then echo -e "\033[35mWARNING - staking.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "staking.xpub" ]; then echo -e "\033[35mWARNING - staking.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
 
-# Generate key & address
-## Generate Payment key pair
-if [ ! -f "payment.skey" ]; then
-    cardano-cli address key-gen \
-        --verification-key-file payment.vkey \
-        --signing-key-file payment.skey
-    echo "Generated payment.vkey and payment.skey."
-else
-    echo "Payment key pair already exists."
+echo
+echo "Generate Recovery Phrase: ${walletName}"
+cardano-address recovery-phrase generate --size 24 > phrase.txt
+
+echo
+echo "Generate Root Key: ${walletName}"
+cat phrase.txt   | cardano-address key from-recovery-phrase Shelley > root.prv
+
+echo
+echo "Generate Private Keys: ${walletName}"
+cat root.prv     | cardano-address key child 1852H/1815H/0H/0/0 > payment.xprv
+cat payment.xprv | cardano-address key public --with-chain-code > payment.xpub
+cat root.prv     | cardano-address key child 1852H/1815H/0H/2/0 > staking.xprv
+cat staking.xprv | cardano-address key public --with-chain-code > staking.xpub
+
+echo
+echo "Generate Payment Address: ${walletName}"
+cat payment.xpub | cardano-address address payment --network-tag ${NETWORK_TAG} > candidate.addr
+
+echo
+echo "Generate Staking Address: ${walletName}"
+cat candidate.addr | cardano-address address delegation $(cat staking.xpub) > payment.candidate.addr
+
+echo
+echo "$(cat candidate.addr)"
+echo "$(cat payment.candidate.addr)"
+cat payment.xprv | cardano-address key inspect
+cat payment.xpub | cardano-address key inspect
+
+cat staking.xprv | cardano-address key inspect
+cat staking.xpub | cardano-address key inspect
+
+cat candidate.addr         | cardano-address address inspect
+cat payment.candidate.addr | cardano-address address inspect
+
+# XPrv/XPub conversion to normal private and public key, keep in mind the
+# keypars are not a valid Ed25519 signing keypairs.
+SESKEY=$(cat staking.xprv | bech32 | cut -b -128 )$(cat staking.xpub | bech32)
+PESKEY=$(cat payment.xprv | bech32 | cut -b -128 )$(cat payment.xpub | bech32)
+
+cat << EOF > staking.skey
+{
+    "type": "StakeExtendedSigningKeyShelley_ed25519_bip32",
+    "description": "",
+    "cborHex": "5880$SESKEY"
+}
+EOF
+
+cat << EOF > payment.skey
+{
+    "type": "PaymentExtendedSigningKeyShelley_ed25519_bip32",
+    "description": "Payment Signing Key",
+    "cborHex": "5880$PESKEY"
+}
+EOF
+
+echo
+echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
+cardano-cli shelley key verification-key --signing-key-file staking.skey --verification-key-file staking.evkey
+cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
+
+cardano-cli shelley key non-extended-key --extended-verification-key-file staking.evkey --verification-key-file staking.vkey
+cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
+
+cardano-cli shelley stake-address build --stake-verification-key-file   staking.vkey ${NETWORK_ARGUMENT} > staking.addr
+cardano-cli shelley address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
+
+cardano-cli shelley address build \
+    --payment-verification-key-file payment.vkey \
+    --stake-verification-key-file   staking.vkey \
+    ${NETWORK_ARGUMENT} > payment.addr
+
+
+echo
+echo "Important the base.addr and the base.addr_candidate must be the same"
+diff payment.addr payment.candidate.addr
+echo
+
+echo
+echo $(cat candidate.addr)
+echo $(cat addr)
+echo
+
+echo
+echo $(cat payment.candidate.addr)
+echo $(cat payment.addr)
+echo
+
+if [[ "$(cat payment.candidate.addr)" != "$(cat payment.addr)" ]]; then
+
+  echo -e "\033[35mWARNING - payment.candidate.addr doesn't match payment.addr! Serious ERROR!!!!\033[0m"; exit 2;
 fi
 
-## Generate Stake key pair
-if [ ! -f "stake.skey" ]; then
-    cardano-cli stake-address key-gen \
-        --verification-key-file stake.vkey \
-        --signing-key-file stake.skey
-    echo "Generated stake.vkey and stake.skey."
-else
-    
-    echo "Stake key pair already exists."
-fi
+if [[ "$(cat candidate.addr)" != "$(cat addr)" ]]; then
 
-## Generate Payment address
-if [ ! -f "payment.addr" ]; then
-    cardano-cli address build \
-        --payment-verification-key-file payment.vkey \
-        --stake-verification-key-file stake.vkey \
-        --out-file payment.addr \
-        --mainnet
-    echo "Generated payment.addr."
-    PAYMENT_ADDR=$(cat payment.addr)
-    echo "Payment address: ${PAYMENT_ADDR}."
-else
-    PAYMENT_ADDR=$(cat payment.addr)
-    echo "Payment address already exists: ${PAYMENT_ADDR}."
-fi
-
-## Generate Stake address
-if [ ! -f "stake.addr" ]; then
-    cardano-cli stake-address build \
-        --stake-verification-key-file stake.vkey \
-        --out-file stake.addr \
-        --mainnet
-    
-    echo "Generated stake.addr."
-    STAKE_ADDR=$(cat stake.addr)
-    echo "Stake address: ${STAKE_ADDR}."
-else
-    STAKE_ADDR=$(cat stake.addr)
-    echo "Stake address already exists: ${STAKE_ADDR}."
+  echo -e "\033[35mWARNING - candidate.addr doesn't match addr! Serious ERROR!!!!\033[0m"; exit 2;
 fi

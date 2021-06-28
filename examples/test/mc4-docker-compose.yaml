@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   mc4-producing: # block-producing node
-    image: arradev/cardano-node:latest
+    image: arradev/cardano-pool:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: mc4-producing
@@ -27,7 +27,7 @@ services:
     command: --start
     restart: unless-stopped
   mc4-relay1: # relay node
-    image: arradev/cardano-node:latest
+    image: arradev/cardano-pool:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: mc4-relay1

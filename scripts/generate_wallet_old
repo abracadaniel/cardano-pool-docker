@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Following guide:
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/020_keys_and_addresses.md
+
+# Init node vars
+source /scripts/init_node_vars
+
+WALLET=$1
+mkdir -p ${NODE_PATH}/staking/wallets/${WALLET}
+cd ${NODE_PATH}/staking/wallets/${WALLET}
+
+echo ""
+echo "Generate stake addresses"
+
+# Generate key & address
+## Generate Payment key pair
+if [ ! -f "payment.skey" ]; then
+    cardano-cli address key-gen \
+        --verification-key-file payment.vkey \
+        --signing-key-file payment.skey
+    echo "Generated payment.vkey and payment.skey."
+else
+    echo "Payment key pair already exists."
+fi
+
+## Generate Stake key pair
+if [ ! -f "stake.skey" ]; then
+    cardano-cli stake-address key-gen \
+        --verification-key-file stake.vkey \
+        --signing-key-file stake.skey
+    echo "Generated stake.vkey and stake.skey."
+else
+    
+    echo "Stake key pair already exists."
+fi
+
+## Generate Payment address
+if [ ! -f "payment.addr" ]; then
+    cardano-cli address build \
+        --payment-verification-key-file payment.vkey \
+        --stake-verification-key-file stake.vkey \
+        --out-file payment.addr \
+        --mainnet
+    echo "Generated payment.addr."
+    PAYMENT_ADDR=$(cat payment.addr)
+    echo "Payment address: ${PAYMENT_ADDR}."
+else
+    PAYMENT_ADDR=$(cat payment.addr)
+    echo "Payment address already exists: ${PAYMENT_ADDR}."
+fi
+
+## Generate Stake address
+if [ ! -f "stake.addr" ]; then
+    cardano-cli stake-address build \
+        --stake-verification-key-file stake.vkey \
+        --out-file stake.addr \
+        --mainnet
+    
+    echo "Generated stake.addr."
+    STAKE_ADDR=$(cat stake.addr)
+    echo "Stake address: ${STAKE_ADDR}."
+else
+    STAKE_ADDR=$(cat stake.addr)
+    echo "Stake address already exists: ${STAKE_ADDR}."
+fi

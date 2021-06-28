@@ -11,4 +11,4 @@ docker run -it --rm \
     -e NODE_NAME="block-producing" \
     -e NODE_TOPOLOGY="<IP-address of relay node>:3001/1" \
     -v $PWD/config/:/config/ \
-    arradev/cardano-node:latest --cold-register --start --staking
+    arradev/cardano-pool:latest --cold-register --start --staking

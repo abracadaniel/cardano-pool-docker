@@ -13,4 +13,4 @@ docker run -it --rm \
     -e CARDANO_NETWORK="main" \
     -e PROMETHEUS_PORT="12798" \
     -v $PWD/config/:/config/ \
-    arradev/cardano-node:latest --start --staking
+    arradev/cardano-pool:latest --start --staking

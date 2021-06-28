@@ -1,0 +1,29 @@
+FROM haskell:8.6.5 as build
+WORKDIR /build
+RUN apt-get update && apt-get install --no-install-recommends -y \
+  build-essential=12.3 \
+  git=1:2.11.*
+RUN stack upgrade --binary-version 2.1.3
+
+# Install cardano-address
+ARG VERSION
+RUN echo "Building tags/$VERSION..." \
+    && git clone https://github.com/input-output-hk/cardano-addresses.git \
+    && cd cardano-addresses \
+    && git fetch --all --recurse-submodules --tags \
+    && git tag \
+    && git checkout tags/$VERSION \
+    && stack setup \
+    && stack build --only-snapshot \
+    && stack build --only-dependencies \
+    && stack install --flag cardano-addresses:release
+
+# Run
+FROM debian:stable-slim
+COPY --from=build /root/.local/bin /bin
+RUN mkdir /etc/bash_completion.d
+RUN cardano-address --bash-completion-script `which cardano-address` > /etc/bash_completion.d/cardano-address
+RUN echo "source /etc/bash_completion.d/cardano-address" >> ~/.bashrc
+RUN echo "cardano-address --help" >> ~/.bashrc
+
+ENTRYPOINT ["cardano-address"]

@@ -14,4 +14,4 @@ docker run -it --rm \
     -e PUBLIC_RELAY_IP="<Public IP-address of relay node>" \
     -e PUBLIC_RELAY_PORT="3000" \
     -v $PWD/config/:/config/ \
-    arradev/cardano-node:latest --cold-create
+    arradev/cardano-pool:latest --cold-create
