@@ -9,7 +9,7 @@ VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
 LSET=$1
 
 # Ledger dump
-#cardano-cli query ledger-state --mainnet > /ledger.json
+cardano-cli query ledger-state --mainnet > /ledger.json
 
 # Get leaderlogs
 echo "Running leaderlogs"

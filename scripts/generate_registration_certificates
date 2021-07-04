@@ -159,7 +159,7 @@ if [ -n "$MULTI_OWNERS" ]; then
                 --stake-verification-key-file wallets/$i/stake.vkey \
                 --cold-verification-key-file cold-keys/cold.vkey \
                 --out-file wallets/$i/delegation.cert \
-            && echo "Generated delegation.cert"
+            && echo "-- generated delegation.cert"
         else
             echo "-- delegation.cert already exists."
         fi

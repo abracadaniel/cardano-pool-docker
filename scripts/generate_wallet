@@ -11,9 +11,9 @@ if [ -f "phrase.txt"   ]; then echo -e "\033[35mWARNING - phrase.txt already pre
 if [ -f "root.prv"     ]; then echo -e "\033[35mWARNING - root.prv already present, delete it or use another name !\033[0m"; exit 2; fi
 if [ -f "payment.xprv" ]; then echo -e "\033[35mWARNING - payment.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
 if [ -f "payment.xpub" ]; then echo -e "\033[35mWARNING - payment.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
-if [ -f "staking.xprv" ]; then echo -e "\033[35mWARNING - staking.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
-if [ -f "staking.xpub" ]; then echo -e "\033[35mWARNING - staking.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
-if [ -f "staking.xpub" ]; then echo -e "\033[35mWARNING - staking.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "stake.xprv" ]; then echo -e "\033[35mWARNING - stake.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "stake.xpub" ]; then echo -e "\033[35mWARNING - stake.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "stake.xpub" ]; then echo -e "\033[35mWARNING - stake.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
 
 echo
 echo "Generate Recovery Phrase: ${walletName}"
@@ -27,8 +27,8 @@ echo
 echo "Generate Private Keys: ${walletName}"
 cat root.prv     | cardano-address key child 1852H/1815H/0H/0/0 > payment.xprv
 cat payment.xprv | cardano-address key public --with-chain-code > payment.xpub
-cat root.prv     | cardano-address key child 1852H/1815H/0H/2/0 > staking.xprv
-cat staking.xprv | cardano-address key public --with-chain-code > staking.xpub
+cat root.prv     | cardano-address key child 1852H/1815H/0H/2/0 > stake.xprv
+cat stake.xprv | cardano-address key public --with-chain-code > stake.xpub
 
 echo
 echo "Generate Payment Address: ${walletName}"
@@ -36,7 +36,7 @@ cat payment.xpub | cardano-address address payment --network-tag ${NETWORK_TAG} 
 
 echo
 echo "Generate Staking Address: ${walletName}"
-cat candidate.addr | cardano-address address delegation $(cat staking.xpub) > payment.candidate.addr
+cat candidate.addr | cardano-address address delegation $(cat stake.xpub) > payment.candidate.addr
 
 echo
 echo "$(cat candidate.addr)"
@@ -44,18 +44,18 @@ echo "$(cat payment.candidate.addr)"
 cat payment.xprv | cardano-address key inspect
 cat payment.xpub | cardano-address key inspect
 
-cat staking.xprv | cardano-address key inspect
-cat staking.xpub | cardano-address key inspect
+cat stake.xprv | cardano-address key inspect
+cat stake.xpub | cardano-address key inspect
 
 cat candidate.addr         | cardano-address address inspect
 cat payment.candidate.addr | cardano-address address inspect
 
 # XPrv/XPub conversion to normal private and public key, keep in mind the
 # keypars are not a valid Ed25519 signing keypairs.
-SESKEY=$(cat staking.xprv | bech32 | cut -b -128 )$(cat staking.xpub | bech32)
-PESKEY=$(cat payment.xprv | bech32 | cut -b -128 )$(cat payment.xpub | bech32)
+SESKEY=$(cat stake.xprv | bech32 | cut -b -128 )$(cat stake.xpub | bech32)
+PESKEY=$(cat stake.xprv | bech32 | cut -b -128 )$(cat stake.xpub | bech32)
 
-cat << EOF > staking.skey
+cat << EOF > stake.skey
 {
     "type": "StakeExtendedSigningKeyShelley_ed25519_bip32",
     "description": "",
@@ -73,18 +73,18 @@ EOF
 
 echo
 echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
-cardano-cli shelley key verification-key --signing-key-file staking.skey --verification-key-file staking.evkey
-cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
+cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
+cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
 
-cardano-cli shelley key non-extended-key --extended-verification-key-file staking.evkey --verification-key-file staking.vkey
+cardano-cli shelley key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
 cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
 
-cardano-cli shelley stake-address build --stake-verification-key-file   staking.vkey ${NETWORK_ARGUMENT} > staking.addr
+cardano-cli shelley stake-address build --stake-verification-key-file   stake.vkey ${NETWORK_ARGUMENT} > stake.addr
 cardano-cli shelley address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
 
 cardano-cli shelley address build \
     --payment-verification-key-file payment.vkey \
-    --stake-verification-key-file   staking.vkey \
+    --stake-verification-key-file   stake.vkey \
     ${NETWORK_ARGUMENT} > payment.addr
 
 

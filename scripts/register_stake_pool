@@ -120,10 +120,11 @@ if [ -n "$MULTI_OWNERS" ]; then
     for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
     do
         echo "$i"
-        MULTIOWNERS_CERT_STRING="${MULTIOWNERS_STRING} --certificate-file wallets/$i/delegation.cert"
+        MULTIOWNERS_CERT_STRING="${MULTIOWNERS_CERT_STRING} --certificate-file wallets/$i/delegation.cert"
         MULTIOWNERS_SIGN="${MULTIOWNERS_SIGN} --signing-key-file wallets/$i/stake.skey"
     done
-    echo $MULTIOWNERS_STRING
+    echo $MULTIOWNERS_CERT_STRING
+    echo $MULTIOWNERS_SIGN
 fi
 
 if [ -z "$NO_DELEG" ]; then
@@ -182,9 +183,7 @@ cardano-cli transaction build-raw \
     --ttl ${TTL} \
     --fee ${FEE} \
     --out-file wallets/owner/transactions/register_stake_pool.raw \
-    --certificate-file pool.cert \
-    --certificate-file wallets/owner/delegation.cert \
-    ${MULTIOWNERS_CERT_STRING}
+    --certificate-file pool.cert ${DELEG_CERTS}
 
 # Sign the transaction
 echo "Sign transaction"
@@ -217,7 +216,7 @@ if [ -z "$COLD_CREATE" ]; then
         echo ${OUT}
 
         # Wait for blockchain to register the pool
-        wait_for_slot ${TTL}
+        #wait_for_slot ${TTL}
         wait_for_pool_registration
         echo "Your stake pool registration has been sent to the blockchain."
         touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
