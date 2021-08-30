@@ -1,0 +1,6 @@
+export NETWORK_ARGUMENT="--testnet-magic 8"
+export NETWORK_TAG=0
+export HARDFORK_EPOCH=1
+export FAUCET_KEY=jv3NBtZeaL0lZUxgqq8slTttX3BzViI7
+export FAUCET_URL=https://faucet.alonzo-purple.dev.cardano.org/send-money/
+export AUTO_TOPOLOGY=False

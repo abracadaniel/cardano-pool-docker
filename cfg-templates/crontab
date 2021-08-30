@@ -1,2 +1,2 @@
 30 * * * * /scripts/topology_submit
-45 * * * * /scripts/topology_update
+#45 * * * * /scripts/topology_update

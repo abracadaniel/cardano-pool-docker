@@ -3,15 +3,14 @@ FROM arradev/cardano-address:latest AS address
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
 FROM arradev/cardano-voting:latest AS voting
-FROM debian:stable-slim
+FROM debian:stable-20210816-slim
 LABEL maintainer="dro@arrakis.it"
 
 SHELL ["/bin/bash", "-c"]
 WORKDIR /
 
 # Install tools
-RUN apt-get update -y \
-    && apt-get install -y vim procps dnsutils bc curl nano cron python3 python3-pip tmux jq wget \
+RUN apt-get update -y && apt-get install -y vim procps dnsutils bc curl nano cron python3 python3-pip tmux jq wget \
     && apt-get clean
 RUN pip3 install pytz
 
@@ -41,13 +40,14 @@ ENV NODE_PORT="3000" \
     POOL_PLEDGE="100000000000" \
     POOL_COST="10000000000" \
     POOL_MARGIN="0.05" \
+    AUTO_TOPOLOGY="True" \
     METADATA_URL="" \
     PUBLIC_RELAY_IP="TOPOLOGY" \
     WAIT_FOR_SYNC="True" \
-    AUTO_TOPOLOGY="True" \
     PATH="/root/.local/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}" \
     LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}" \
     CARDANO_NODE_SOCKET_PATH="DEFAULT" \
+    CNCLI_SYNC="True" \
     LANG="C.UTF-8"
 
 # Add config

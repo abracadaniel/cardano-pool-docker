@@ -53,7 +53,7 @@ cat payment.candidate.addr | cardano-address address inspect
 # XPrv/XPub conversion to normal private and public key, keep in mind the
 # keypars are not a valid Ed25519 signing keypairs.
 SESKEY=$(cat stake.xprv | bech32 | cut -b -128 )$(cat stake.xpub | bech32)
-PESKEY=$(cat stake.xprv | bech32 | cut -b -128 )$(cat stake.xpub | bech32)
+PESKEY=$(cat payment.xprv | bech32 | cut -b -128 )$(cat payment.xpub | bech32)
 
 cat << EOF > stake.skey
 {
@@ -74,7 +74,7 @@ EOF
 echo
 echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
 cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
-cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
+cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
 
 cardano-cli shelley key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
 cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey

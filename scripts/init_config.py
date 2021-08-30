@@ -51,6 +51,7 @@ def init_args():
     args.CONFIG_OUTPUT_PATH = os.path.join(CONFIG_OUTPUT_ROOT_PATH, CONFIG_NAME)
     args.BYRON_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'byron-genesis.json')
     args.SHELLEY_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'shelley-genesis.json')
+    args.ALONZO_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'alonzo-genesis.json')
     args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology.json')
     args.CONFIG_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'config.json')
     args.VARS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'VARS')
@@ -65,8 +66,13 @@ def init_folder(args):
 def init_genesis(args):
     """Initializes the genesis file"""
 
+    ALONZO_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'alonzo-genesis.json')
     SHELLEY_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'shelley-genesis.json')
     BYRON_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'byron-genesis.json')
+
+    if not os.path.exists(args.ALONZO_GENESIS_PATH) or args.replace_existing:
+        print('Generating new alonzo genesis file %s from template %s' % (args.ALONZO_GENESIS_PATH, ALONZO_SRC))
+        shutil.copy(ALONZO_SRC, args.ALONZO_GENESIS_PATH)
 
     if not os.path.exists(args.SHELLEY_GENESIS_PATH) or args.replace_existing:
         print('Generating new shelley genesis file %s from template %s' % (args.SHELLEY_GENESIS_PATH, SHELLEY_SRC))
@@ -145,6 +151,7 @@ def init_config(args):
         data['hasPrometheus'] = [args.prometheus_host, args.prometheus_port]
         data['ShelleyGenesisFile'] = args.SHELLEY_GENESIS_PATH
         data['ByronGenesisFile'] = args.BYRON_GENESIS_PATH
+        data['AlonzoGenesisFile'] = args.ALONZO_GENESIS_PATH
         save_json(args.CONFIG_PATH, data)
 
 def init_vars(args):

@@ -26,9 +26,12 @@ RUN wget https://downloads.haskell.org/ghc/8.10.2/ghc-8.10.2-x86_64-deb9-linux.t
     && rm -rf /ghc-8.10.2
 
 # Install libsodium
+ARG LIBSODIUM_VERSION
 RUN git clone https://github.com/input-output-hk/libsodium \
     && cd libsodium \
-    && git checkout 66f017f1 \
+    && git fetch --all --recurse-submodules --tags \
+    && git tag \
+    && git checkout tags/$LIBSODIUM_VERSION \
     && ./autogen.sh \
     && ./configure \
     && make \

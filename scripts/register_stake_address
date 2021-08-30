@@ -185,7 +185,6 @@ if [ -z "$COLD_CREATE" ]; then
         echo ${OUT}
 
         # Wait for blockchain to register the address
-        wait_for_slot ${TTL}
         wait_for_address_registration ${STAKE_ADDR}
         echo "Your stake address is now registered in the blockchain."
         touch transactions/register_stake_address.submitted

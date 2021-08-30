@@ -244,7 +244,8 @@ The latest supported networks can be found at [https://hydra.iohk.io/job/Cardano
 | Network | CARDANO_NETWORK value |
 | :-- | -- |
 | mainnet | main |
-| mainnet-candidate4 | mc4 |
+| alonzo-purple | Alonzo Purple testnet |
+| test | Public testnet |
 
 
 ## Ports

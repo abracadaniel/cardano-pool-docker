@@ -1,3 +1,0 @@
-export NETWORK_ARGUMENT="--testnet-magic 42"
-export NETWORK_TAG=0
-export HARDFORK_EPOCH=1

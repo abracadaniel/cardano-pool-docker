@@ -4,46 +4,44 @@ services:
     image: arradev/cardano-pool:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: mc4-producing
+    container_name: test-producing
     network_mode: host
     volumes:
       - $PWD/config/local/:/config
     environment:
       - HOST_ADDR=0.0.0.0
       - NODE_PORT=3000
-      - NODE_NAME=mc4-block-producing
+      - NODE_NAME=test-producing
       - NODE_TOPOLOGY=127.0.0.1:3001/1
       - NODE_RELAY=False
-      - CARDANO_NETWORK=mc4
+      - CARDANO_NETWORK=test
       - EKG_PORT=12888
       - PROMETHEUS_PORT=12898
       - PROMETHEUS_HOST=127.0.0.1
       - POOL_PLEDGE=100000000000
-      - POOL_COST=1000000000
+      - POOL_COST=340000000
       - POOL_MARGIN=0.05
-      - CREATE_STAKEPOOL=True
       - METADATA_URL=https://gist.githubusercontent.com/abracadaniel/58dfa2cfe0f986c7f445deb151ed1b49/raw/4bb8155af7be65d7e9869f0923c7ce778c75368b/metadata.json
       - PUBLIC_RELAY_IP=PUBLIC
-    command: --start
+    command: --start --staking --create
     restart: unless-stopped
   mc4-relay1: # relay node
     image: arradev/cardano-pool:latest
     stdin_open: true # docker run -i
     tty: true        # docker run -t
-    container_name: mc4-relay1
+    container_name: test-relay1
     network_mode: host
     volumes:
       - $PWD/config/local/:/config
     environment:
       - HOST_ADDR=0.0.0.0
       - NODE_PORT=3001
-      - NODE_NAME=mc4-relay1
+      - NODE_NAME=test-relay1
       - NODE_TOPOLOGY=127.0.0.1:3000/1
       - NODE_RELAY=True
-      - CARDANO_NETWORK=mc4
+      - CARDANO_NETWORK=test
       - EKG_PORT=12889
       - PROMETHEUS_PORT=12899
       - PROMETHEUS_HOST=127.0.0.1
-      - AUTO_TOPOLOGY=False
     command: --start
     restart: unless-stopped

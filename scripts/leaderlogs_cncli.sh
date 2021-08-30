@@ -9,7 +9,7 @@ VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
 LSET=$1
 
 # Ledger dump
-cardano-cli query ledger-state --mainnet > /ledger.json
+cardano-cli query ledger-state --mainnet > ${NODE_PATH}/ledger.json
 
 # Get leaderlogs
 echo "Running leaderlogs"
@@ -18,6 +18,7 @@ cncli leaderlog \
     --shelley-genesis ${NODE_PATH}/shelley-genesis.json \
     --pool-id ${POOL_ID} \
     --pool-vrf-skey ${VRF} \
-    --ledger-state /ledger.json \
+    --ledger-state ${NODE_PATH}/ledger.json \
     --ledger-set ${LSET} \
-    --tz ${TZ}
+    --tz ${TZ} \
+    --db ${NODE_PATH}/cncli.db 

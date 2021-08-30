@@ -1,13 +1,15 @@
 #!/bin/bash
 
-NODE_VERSION="1.27.0"
-ADDRESS_VERSION="3.4.0"
+NODE_VERSION="1.29.0"
+LIBSODIUM_VERSION="1.0.16"
+ADDRESS_VERSION="3.5.0"
 BECH_VERSION="1.1.1"
-CNCLI_VERSION="3.1.0"
-POOL_VERSION="1.0.1"
+CNCLI_VERSION="3.1.5"
+POOL_VERSION="1.0.2"
 
 docker build -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
+    --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
     --tag arradev/cardano-node:${NODE_VERSION} \
     --tag arradev/cardano-node:latest .
 
