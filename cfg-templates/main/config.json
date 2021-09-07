@@ -1,4 +1,6 @@
 {
+  "AlonzoGenesisFile": "mainnet-alonzo-genesis.json",
+  "AlonzoGenesisHash": "7e94a15f55d1e82d10f09203fa1d40f8eede58fd8066542cf6566008068ed874",
   "ApplicationName": "cardano-sl",
   "ApplicationVersion": 1,
   "ByronGenesisFile": "mainnet-byron-genesis.json",
@@ -11,29 +13,38 @@
   "RequiresNetworkMagic": "RequiresNoMagic",
   "ShelleyGenesisFile": "mainnet-shelley-genesis.json",
   "ShelleyGenesisHash": "1a3be38bcbb7911969283716ad7aa550250226b76a61fc51cc9a9a35d9276d81",
-  "TraceBlockFetchClient": true,
-  "TraceBlockFetchDecisions": true,
-  "TraceBlockFetchProtocol": true,
-  "TraceBlockFetchProtocolSerialised": true,
-  "TraceBlockFetchServer": true,
+  "TraceBlockFetchClient": false,
+  "TraceBlockFetchDecisions": false,
+  "TraceBlockFetchProtocol": false,
+  "TraceBlockFetchProtocolSerialised": false,
+  "TraceBlockFetchServer": false,
   "TraceChainDb": true,
   "TraceChainSyncBlockServer": false,
   "TraceChainSyncClient": false,
   "TraceChainSyncHeaderServer": false,
   "TraceChainSyncProtocol": false,
+  "TraceConnectionManager": true,
   "TraceDNSResolver": true,
   "TraceDNSSubscription": true,
+  "TraceDiffusionInitialization": true,
   "TraceErrorPolicy": true,
   "TraceForge": true,
   "TraceHandshake": false,
+  "TraceInboundGovernor": true,
   "TraceIpSubscription": true,
+  "TraceLedgerPeers": true,
   "TraceLocalChainSyncProtocol": false,
   "TraceLocalErrorPolicy": true,
   "TraceLocalHandshake": false,
+  "TraceLocalRootPeers": true,
   "TraceLocalTxSubmissionProtocol": false,
   "TraceLocalTxSubmissionServer": false,
   "TraceMempool": true,
   "TraceMux": false,
+  "TracePeerSelection": true,
+  "TracePeerSelectionActions": true,
+  "TracePublicRootPeers": true,
+  "TraceServer": true,
   "TraceTxInbound": false,
   "TraceTxOutbound": false,
   "TraceTxSubmissionProtocol": false,
@@ -57,18 +68,6 @@
   "minSeverity": "Info",
   "options": {
     "mapBackends": {
-      "cardano.node-metrics": [
-        "EKGViewBK"
-      ],
-      "cardano.node.BlockFetchDecision.peers": [
-        "EKGViewBK"
-      ],
-      "cardano.node.ChainDB.metrics": [
-        "EKGViewBK"
-      ],
-      "cardano.node.Forge.metrics": [
-        "EKGViewBK"
-      ],
       "cardano.node.metrics": [
         "EKGViewBK"
       ],
@@ -77,60 +76,6 @@
       ]
     },
     "mapSubtrace": {
-      "#ekgview": {
-        "contents": [
-          [
-            {
-              "contents": "cardano.epoch-validation.benchmark",
-              "tag": "Contains"
-            },
-            [
-              {
-                "contents": ".monoclock.basic.",
-                "tag": "Contains"
-              }
-            ]
-          ],
-          [
-            {
-              "contents": "cardano.epoch-validation.benchmark",
-              "tag": "Contains"
-            },
-            [
-              {
-                "contents": "diff.RTS.cpuNs.timed.",
-                "tag": "Contains"
-              }
-            ]
-          ],
-          [
-            {
-              "contents": "#ekgview.#aggregation.cardano.epoch-validation.benchmark",
-              "tag": "StartsWith"
-            },
-            [
-              {
-                "contents": "diff.RTS.gcNum.timed.",
-                "tag": "Contains"
-              }
-            ]
-          ]
-        ],
-        "subtrace": "FilterTrace"
-      },
-      "benchmark": {
-        "contents": [
-          "GhcRtsStats",
-          "MonotonicClock"
-        ],
-        "subtrace": "ObservableTrace"
-      },
-      "cardano.epoch-validation.utxo-stats": {
-        "subtrace": "NoTrace"
-      },
-      "cardano.node-metrics": {
-        "subtrace": "Neutral"
-      },
       "cardano.node.metrics": {
         "subtrace": "Neutral"
       }

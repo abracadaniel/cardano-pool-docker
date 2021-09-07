@@ -6,5 +6,5 @@ function auto_topology_start {
     echo -e "\n"
 
     # Update topology.json
-    topology_update --retry
+    topology_update --retry --auto-restart
 }

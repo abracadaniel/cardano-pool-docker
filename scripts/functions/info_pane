@@ -12,5 +12,8 @@ function info_pane {
     
     wait_for_sync 99.98
 
-    read
+    while true; do
+        sync_status
+        sleep 60
+    done
 }
