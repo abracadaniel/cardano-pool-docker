@@ -1,5 +1,7 @@
 function check_balance {
     PRICE=$1
+    MINIMAL_LOVELACE_REMAINING_ON_UTXO=1000000
+    LOVELACE_FOR_UTXO_TXIX=10000000000000
 
     if [ -z "$COLD_CREATE" ]; then
         while true; do
@@ -19,7 +21,8 @@ function check_balance {
 
                 if [ -n "${LOVELACE}" ]; then
                     echo "${arr[0]}#${arr[1]}: ${arr[2]}"
-                    if [ "$LOVELACE" -ge "$PRICE" ]; then
+                    REMAINING=$(expr ${LOVELACE} - ${PRICE})
+                    if [ "$LOVELACE" -ge "$PRICE" ] && [ "$LOVELACE_FOR_UTXO_TXIX" -ge "$LOVELACE" ] && [ "$REMAINING" -ge "$MINIMAL_LOVELACE_REMAINING_ON_UTXO" ]; then
                         UTXO=${arr[0]}
                         TXIX=${arr[1]}
                         LOVELACE_FOR_UTXO_TXIX=$LOVELACE
