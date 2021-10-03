@@ -7,7 +7,7 @@ walletName="$1" # eg. wallet/name/name
 mkdir -p ${NODE_PATH}/staking/wallets/${walletName}
 cd ${NODE_PATH}/staking/wallets/${walletName}
 
-if [ -f "phrase.txt"   ]; then echo -e "\033[35mWARNING - phrase.txt already present, delete it or use another name !\033[0m"; exit 2; fi
+#if [ -f "phrase.txt"   ]; then echo -e "\033[35mWARNING - phrase.txt already present, delete it or use another name !\033[0m"; exit 2; fi
 if [ -f "root.prv"     ]; then echo -e "\033[35mWARNING - root.prv already present, delete it or use another name !\033[0m"; exit 2; fi
 if [ -f "payment.xprv" ]; then echo -e "\033[35mWARNING - payment.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
 if [ -f "payment.xpub" ]; then echo -e "\033[35mWARNING - payment.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
@@ -16,8 +16,12 @@ if [ -f "stake.xpub" ]; then echo -e "\033[35mWARNING - stake.xpub already prese
 if [ -f "stake.xpub" ]; then echo -e "\033[35mWARNING - stake.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
 
 echo
-echo "Generate Recovery Phrase: ${walletName}"
-cardano-address recovery-phrase generate --size 24 > phrase.txt
+if [ -f "phrase.txt"   ]; then
+  echo "Phrase already present. Generating keys from phrase."
+else
+  echo "Generate Recovery Phrase: ${walletName}"
+  cardano-address recovery-phrase generate --size 24 > phrase.txt
+fi
 
 echo
 echo "Generate Root Key: ${walletName}"

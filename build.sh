@@ -1,11 +1,11 @@
 #!/bin/bash
 
-NODE_VERSION="1.29.0"
+NODE_VERSION="1.30.1"
 LIBSODIUM_VERSION="1.0.16"
 ADDRESS_VERSION="3.5.0"
 BECH_VERSION="1.1.1"
 CNCLI_VERSION="3.1.5"
-POOL_VERSION="1.0.2"
+POOL_VERSION="1.0.4"
 
 docker build -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
