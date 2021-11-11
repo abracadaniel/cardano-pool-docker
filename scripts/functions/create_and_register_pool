@@ -10,7 +10,7 @@ function create_and_register_pool {
         BACKUPNAME="staking.${TIMESTAMP}.tar.gz"
         echo "staking directory already exists."
         echo "Backing up to ${BACKUPNAME}."
-        mkdir -p backups/
+        mkdir -p ${NODE_PATH}/backups/
         tar -zcvf ${NODE_PATH}/backups/${BACKUPNAME} ${NODE_PATH}/staking/ > /dev/null
     fi
 
