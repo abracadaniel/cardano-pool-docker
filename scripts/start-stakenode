@@ -32,8 +32,6 @@ if [ -n "$MISSING_FILES" ]; then
 
     exit
 else
-    tmux \
-        new-session  "source /scripts/functions/run_stakingnode; run_stakingnode" \; \
-        split-window "source /scripts/functions/status; status" \; \
-        select-layout even-horizontal
+    source /scripts/functions/run_stakingnode
+    run_stakingnode
 fi

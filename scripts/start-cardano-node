@@ -114,9 +114,7 @@ if [ -n "$START_NODE" ]; then
         # Start as staking node
         /scripts/start-stakenode
     else
-        tmux \
-            new-session  "source /scripts/functions/run_node; run_node" \; \
-            split-window "source /scripts/functions/info_pane; info_pane" \; \
-            select-layout even-horizontal
+        source /scripts/functions/run_node
+        run_node
     fi
 fi
