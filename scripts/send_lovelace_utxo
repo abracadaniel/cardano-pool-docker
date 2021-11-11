@@ -1,0 +1,139 @@
+#!/bin/bash
+
+source /scripts/functions/check_balance
+
+WALLET=$1
+TO_ADDR=$2
+UTXO=$3
+SEND_LOVELACE=$4
+TIMESTAMP=$(date +%s)
+
+if [ -z "$WALLET" ]; then
+    echo "Invalid wallet."
+    MISSING_ARG=1
+fi
+
+if [ -z "$TO_ADDR" ]; then
+    echo "Invalid recipient address."
+    MISSING_ARG=1
+fi
+
+if [ -z "$UTXO" ]; then
+    echo "Missing UTXO."
+    MISSING_ARG=1
+fi
+
+if [ -z "$SEND_LOVELACE" ]; then
+    echo "Missing ADA amount."
+    MISSING_ARG=1
+fi
+
+if [ -n "$MISSING_ARG" ]; then
+    exit
+fi
+
+# Check for required files
+if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.skey" ]; then
+    echo "Missing required payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ -n "$MISSING_FILES" ]; then
+    exit
+fi
+
+cd ${NODE_PATH}/staking/wallets/${WALLET}/
+mkdir -p transactions/
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+cardano-cli query protocol-parameters \
+    ${NETWORK_ARGUMENT} \
+    --out-file ${NODE_PATH}/staking/protocol.json
+
+ADDRESS=$(cat payment.addr)
+
+# Draft transaction
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}" \
+    --tx-out ${TO_ADDR}+0 \
+    --tx-out ${ADDRESS}+0 \
+    --ttl 0 \
+    --fee 0 \
+    --out-file transactions/tx.${TIMESTAMP}.draft
+
+FEE=$(cardano-cli transaction calculate-min-fee \
+    --tx-body-file transactions/tx.${TIMESTAMP}.draft \
+    --tx-in-count 1 \
+    --tx-out-count 2 \
+    ${NETWORK_ARGUMENT} \
+    --witness-count 1 \
+    --byron-witness-count 0 \
+    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
+
+# Find UTXO in address with enough lovelace to do the transaction
+check_balance ${SEND_LOVELACE}
+
+# Update slot and TTL
+SLOT=$(get_slot)
+TTL=$(expr ${SLOT} + 500)
+
+# Display transaction info
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${SEND_LOVELACE})
+RECEIVE_LOVELACE=$(expr ${SEND_LOVELACE} - ${FEE})
+echo "Creating transaction"
+echo "Current tip Slot: ${SLOT}"
+echo "TTL: ${TTL}"
+echo ""
+echo "$SEND_ADA ADA is ${SEND_LOVELACE} Lovelace"
+echo "From wallet: ${WALLET}"
+echo "From address: ${ADDRESS}"
+echo "To address: ${TO_ADDR}"
+echo "Send amount: ${SEND_LOVELACE} Lovelace"
+echo "Fee is: ${FEE} Lovelace"
+echo "Recipient gets: ${RECEIVE_LOVELACE} Lovelace"
+echo "Balance after transaction: ${REMAINING_AFTER_TX} Lovelace"
+
+#
+# Create the transaction
+#
+echo "Create transaction"
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}" \
+    --tx-out ${TO_ADDR}+${RECEIVE_LOVELACE} \
+    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+    --ttl ${TTL} \
+    --fee ${FEE} \
+    --out-file transactions/tx.${TIMESTAMP}.raw
+
+cardano-cli transaction sign \
+    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
+    --signing-key-file payment.skey \
+    ${NETWORK_ARGUMENT} \
+    --out-file transactions/tx.${TIMESTAMP}.signed
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
+
+echo "Submit transaction"
+OUT=$(cardano-cli transaction submit \
+    --tx-file transactions/tx.${TIMESTAMP}.signed \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+fi

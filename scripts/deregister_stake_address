@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/040_transactions.md
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/050_register_key.md
+
+# Init functions and vars
+
+source /scripts/functions/check_balance
+source /scripts/functions/check_address_registration
+source /scripts/functions/wait_for_address_registration
+source /scripts/functions/wait_for_slot
+source /scripts/functions/wait_for_sync
+source /scripts/init_node_vars
+
+# Define wallet
+WALLET=$1
+
+if [ -z "$WALLET" ]; then
+    echo "Wallet is undefined."
+    exit
+fi
+
+# Enter staking directory
+cd ${NODE_PATH}/staking/wallets/${WALLET}
+STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/stake.addr)
+
+echo ""
+echo "Submitting staking addresses for $WALLET to the blockchain."
+
+# Check for required files
+if [ ! -f "stake.vkey" ]; then
+    echo "Missing required wallets/${WALLET}/stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "stake.skey" ]; then
+    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "payment.skey" ]; then
+    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "payment.addr" ]; then
+    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ -n "$MISSING_FILES" ]; then
+    exit
+fi
+
+mkdir -p transactions
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+# Generate protocol
+cardano-cli query protocol-parameters \
+    ${NETWORK_ARGUMENT} \
+    --out-file ${NODE_PATH}/staking/protocol.json
+
+# Get key-deposit
+KEY_DEPOSIT=$(jq -r .stakeAddressDeposit ${NODE_PATH}/staking/protocol.json)
+
+# Find UTXO in address with enough lovelace to do the transaction
+ADDRESS=$(cat payment.addr)
+check_balance ${KEY_DEPOSIT}
+
+# Generate deregistration cert
+cardano-cli stake-address deregistration-certificate \
+    --staking-verification-key-file stake.vkey \
+    --out-file destake.cert
+
+# Draft transaction
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}#${TXIX}" \
+    --tx-out ${ADDRESS}+0 \
+    --ttl 0 \
+    --fee 0 \
+    --out-file transactions/deregister_stake_address.draft \
+    --certificate-file destake.cert
+
+# Calculate fees
+FEE=$(cardano-cli transaction calculate-min-fee \
+    --tx-body-file transactions/deregister_stake_address.draft \
+    --tx-in-count 1 \
+    --tx-out-count 1 \
+    --witness-count 1 \
+    --byron-witness-count 0 \
+    ${NETWORK_ARGUMENT} \
+    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
+
+TOTAL_PRICE=$(expr ${FEE})
+echo "Fee is: ${FEE} Lovelace"
+echo "Key-Deposit: ${KEY_DEPOSIT} Lovelace"
+echo "Total Price is: ${TOTAL_PRICE}"
+
+# Find UTXO in address with enough lovelace to do the transaction
+check_balance ${TOTAL_PRICE}
+SLOT=$(get_slot)
+
+# Get slot and TTL
+TTL=$(expr ${SLOT} + 500)
+
+# Display transaction info
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE} + ${KEY_DEPOSIT})
+echo "Creating transaction"
+echo "Lovelace after transaction: ${REMAINING_AFTER_TX}"
+echo "Current slot: ${SLOT}"
+echo "TTL: ${TTL}"
+
+#
+# Create the transaction
+#
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}#${TXIX}" \
+    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+    --ttl ${TTL} \
+    --fee ${FEE} \
+    --out-file transactions/deregister_stake_address.raw \
+    --certificate-file destake.cert
+
+# Sign the transaction
+cardano-cli transaction sign \
+    --tx-body-file transactions/deregister_stake_address.raw \
+    --signing-key-file payment.skey \
+    --signing-key-file stake.skey \
+    ${NETWORK_ARGUMENT} \
+    --out-file transactions/deregister_stake_address.signed
+
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
+
+OUT=$(cardano-cli transaction submit \
+    --tx-file transactions/deregister_stake_address.signed \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+
+    echo "Your stake address is now deregistered."
+    touch transactions/deregister_stake_address.submitted
+fi
