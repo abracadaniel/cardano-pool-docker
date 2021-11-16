@@ -48,6 +48,7 @@ ENV NODE_PORT="3000" \
     LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}" \
     CARDANO_NODE_SOCKET_PATH="DEFAULT" \
     CNCLI_SYNC="True" \
+    STATUS_PANEL="False" \
     LANG="C.UTF-8"
 
 # Add config

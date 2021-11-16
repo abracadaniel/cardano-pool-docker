@@ -219,6 +219,8 @@ You can pass the following environment variables to the container.
 | PUBLIC_RELAY_IP | Public IP address of Relay node. <br/><br/>Values:<br/>\<Any IP address\><br/>TOPOLOGY: Use first entry of the topology.<br/>PUBLIC: Use public IP of node.<br/>Default: TOPOLOGY. |
 | PUBLIC_RELAY_PORT | Public port of Relay node. <br/><br/>Values:<br/>\<Any Port\><br/>If PUBLIC_RELAY_IP=TOPOLOGY the PUBLIC_RELAY_PORT will also be updated accordingly.<br/>Default: First entry of the topology. |
 | AUTO_TOPOLOGY | Automatically update topology.json. Default: True |
+| CNCLI_SYNC | Synchronize CNCLI. Default: True |
+| STATUS_PANEL | Split screen with cardano-node and status panel. Default: False |
 
 
 ## Commands
@@ -279,7 +281,7 @@ Use these example scripts to see how the nodes can be started.
 
 
 ## Docker hub
-Image can be found [here](https://hub.docker.com/repository/docker/arradev/cardano-node).
+Image can be found [here](https://hub.docker.com/repository/docker/arradev/cardano-pool).
 
 
 ## Building locally
@@ -296,7 +298,7 @@ cd cardano-node-docker
 ## Thank you
 
 I hope you will find this useful. If you like the work please consider delegating to my pool:
-`[ARRA1] Arrakis (c65ca06828caa8fc9b0bb015af93ef71685544c6ed2abbb7c59b0e62)`
+`[ARRA] Arrakis (c65ca06828caa8fc9b0bb015af93ef71685544c6ed2abbb7c59b0e62)`
 
 or donating a few ADA to:
-`addr1qyfdc9rkw2njpevpene998w93uyghftspnv6muxkwt82tyyjn4up3dddmmul3a5p98996dyd5nhn2mwthwce6rjrp0espmglvg`
+`addr1qys4rnfu5suydj480gwlnxxfkazjscy5j3ekgrnywvqht6ujn4up3dddmmul3a5p98996dyd5nhn2mwthwce6rjrp0esqtey6p`

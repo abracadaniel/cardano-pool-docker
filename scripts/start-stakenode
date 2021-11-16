@@ -32,6 +32,13 @@ if [ -n "$MISSING_FILES" ]; then
 
     exit
 else
-    source /scripts/functions/run_stakingnode
-    run_stakingnode
+    if [[ $STATUS_PANEL = "True" ]]; then
+        tmux \
+            new-session  "source /scripts/functions/run_stakingnode; run_stakingnode" \; \
+            split-window "source /scripts/functions/status; status" \; \
+            select-layout even-horizontal
+    else
+        source /scripts/functions/run_stakingnode
+        run_stakingnode
+    fi
 fi

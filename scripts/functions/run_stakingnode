@@ -5,6 +5,12 @@ function run_stakingnode {
     echo "Starting cardano-node as a staking node."
     node_info 1
 
+    # CNCLI sync
+    if [[ $CNCLI_SYNC = "True" ]];
+    then
+        cncli sync --host 127.0.0.1 --port $NODE_PORT --db ${NODE_PATH}/cncli.db &
+    fi
+
     # Running in loop allows for restarting without restarting the container
     while true; do 
         cardano-node run \
