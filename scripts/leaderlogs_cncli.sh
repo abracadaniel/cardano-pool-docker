@@ -16,6 +16,7 @@ case ${LSET} in
 esac
 
 # Get stake snapshot
+echo "Generating snapshot."
 cardano-cli query stake-snapshot \
   --stake-pool-id ${POOL_ID} \
   --mainnet > ${SNAPSHOT}
@@ -36,6 +37,7 @@ case ${LSET} in
 esac
 
 # Get leaderlogs
+echo "Running leaderlogs"
 cncli leaderlog \
   --byron-genesis ${NODE_PATH}/byron-genesis.json \
   --shelley-genesis ${NODE_PATH}/shelley-genesis.json \
