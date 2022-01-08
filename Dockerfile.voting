@@ -1,4 +1,4 @@
-FROM debian:stable-slim as build
+FROM debian:buster-slim as build
 LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
