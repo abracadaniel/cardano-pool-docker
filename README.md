@@ -210,6 +210,8 @@ You can pass the following environment variables to the container.
 | PROMETHEUS_HOST | Host of Prometheus monitoring. Default: 127.0.0.1. |
 | PROMETHEUS_PORT | Port of Prometheus monitoring. Default: 12798. |
 | RESOLVE_HOSTNAMES | Resolve topology hostnames to IP-addresses. Default: False. |
+| CONFIG_OUTPUT_ROOT_PATH | Root path for config files. Default: /config |
+| CONFIG_TEMPLATES_ROOT_PATH | Root path for template files. Default: /cfg-templates |
 | REPLACE_EXISTING_CONFIG | Reset and replace existing configs. Default: False. |
 | POOL_PLEDGE | Pledge (lovelace). Default: 100000000000 |
 | POOL_COST | Operational costs per epoch (lovelace). Default: 10000000000 |
