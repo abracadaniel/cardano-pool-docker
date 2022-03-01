@@ -2,7 +2,7 @@ FROM arradev/cardano-node:latest AS node
 FROM arradev/cardano-address:latest AS address
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
-FROM arradev/cardano-voting:latest AS voting
+#FROM arradev/cardano-voting:latest AS voting
 FROM debian:stable-20210816-slim
 LABEL maintainer="dro@arrakis.it"
 
@@ -20,8 +20,8 @@ COPY --from=node /lib/libsodium* /lib/
 COPY --from=cncli /bin/cncli /bin/
 COPY --from=address /bin/cardano-address /bin/
 COPY --from=bech32 /bin/bech32 /bin/
-COPY --from=voting /bin/voting-tools /bin/
-COPY --from=voting /bin/voter-registration /bin/
+#COPY --from=voting /bin/voting-tools /bin/
+#COPY --from=voting /bin/voter-registration /bin/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus

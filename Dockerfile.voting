@@ -3,32 +3,26 @@ LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
 RUN apt-get update -y \
-    && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 libtool autoconf libsqlite3-dev m4 ca-certificates gcc libc6-dev \
+    && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 libtool autoconf libsqlite3-dev m4 ca-certificates gcc libc6-dev  curl\
     && apt-get clean
 
-# Install cabal
-ENV PATH="/root/.cabal/bin:/root/.ghcup/bin:/root/.local/bin:$PATH"
-RUN wget https://downloads.haskell.org/~cabal/cabal-install-3.2.0.0/cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz \
-    && tar -xf cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz \
-    && rm cabal-install-3.2.0.0-x86_64-unknown-linux.tar.xz cabal.sig \
-    && mkdir -p ~/.local/bin \
-    && mv cabal ~/.local/bin/ \
-    && cabal update && cabal --version
-
 # Install GHC
-RUN wget https://downloads.haskell.org/ghc/8.10.2/ghc-8.10.2-x86_64-deb9-linux.tar.xz \
-    && tar -xf ghc-8.10.2-x86_64-deb9-linux.tar.xz \
-    && rm ghc-8.10.2-x86_64-deb9-linux.tar.xz \
-    && cd ghc-8.10.2 \
-    && ./configure \
-    && make install \
-    && cd / \
-    && rm -rf /ghc-8.10.2
+ENV CABAL_VERSION=3.6.0.0 \
+    GHC_VERSION=8.10.7 \
+    PATH="$HOME/.cabal/bin:/root/.ghcup/bin:$PATH"
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
+    && ghcup install ghc ${GHC_VERSION} \
+    && ghcup install cabal ${CABAL_VERSION} \
+    && ghcup set ghc ${GHC_VERSION} \
+    && ghcup set cabal ${CABAL_VERSION}
 
 # Install libsodium
+ARG LIBSODIUM_VERSION
 RUN git clone https://github.com/input-output-hk/libsodium \
     && cd libsodium \
-    && git checkout 66f017f1 \
+    && git fetch --all --recurse-submodules --tags \
+    && git tag \
+    && git checkout $LIBSODIUM_VERSION \
     && ./autogen.sh \
     && ./configure \
     && make \

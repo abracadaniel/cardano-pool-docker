@@ -1,8 +1,8 @@
 #!/bin/bash
 
-NODE_VERSION="1.33.0"
+NODE_VERSION="1.34.0"
 LIBSODIUM_VERSION="66f017f1"
-ADDRESS_VERSION="3.6.0"
+ADDRESS_VERSION="3.8.0"
 BECH_VERSION="1.1.2"
 CNCLI_VERSION="4.0.4"
 POOL_VERSION="1.33.0"
@@ -18,8 +18,9 @@ docker build -f Dockerfile.address \
     --tag arradev/cardano-address:${ADDRESS_VERSION} \
     --tag arradev/cardano-address:latest .
 
-docker build -f Dockerfile.voting \
-    --tag arradev/cardano-voting:latest .
+#docker build -f Dockerfile.voting \
+#    --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
+#    --tag arradev/cardano-voting:latest .
 
 docker build -f Dockerfile.bech32 \
     --build-arg VERSION=${BECH_VERSION} \
