@@ -1,0 +1,11 @@
+#!/bin/bash
+
+POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
+BYRON_GENESIS=${NODE_PATH}/byron-genesis.json
+SHELLEY_GENESIS=${NODE_PATH}/shelley-genesis.json
+
+every_five_days \
+&& cardano-cli query ledger-state --mary-era ${NETWORK_ARGUMENT} > /tmp/ledger-state-mainnet.json \
+&& cncli leaderlog --pool-id ${POOL_ID} --pool-vrf-skey ${VRF} --byron-genesis ${BYRON_GENESIS} --shelley-genesis ${SHELLEY_GENESIS} --ledger-state /tmp/ledger-state-mainnet.json --ledger-set next | tee ${NODE_PATH}/leaderlog.json \
+&& cncli sendslots --byron-genesis ${BYRON_GENESIS} --shelley-genesis ${SHELLEY_GENESIS} --config ${NODE_PATH}/pooltool.json

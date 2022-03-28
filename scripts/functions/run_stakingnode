@@ -6,9 +6,18 @@ function run_stakingnode {
     node_info 1
 
     # CNCLI sync
-    if [[ $CNCLI_SYNC = "True" ]];
-    then
+    if [[ "$CNCLI_SYNC"="True" ]]; then
         cncli sync --host 127.0.0.1 --port $NODE_PORT --db ${NODE_PATH}/cncli.db &
+
+        if [[ "$PT_SENDTIP"="True" ]]; then
+            cncli sendtip --cardano-node /bin/cardano-node --config ${NODE_PATH}/pooltool.json &
+        fi
+
+        if [[ "$PT_SENDSLOTS"="True" ]]; then
+            # Add to crontab
+            echo "00 22 * * * send_slots" >> /crontab
+            crontab /crontab
+        fi
     fi
 
     # Running in loop allows for restarting without restarting the container

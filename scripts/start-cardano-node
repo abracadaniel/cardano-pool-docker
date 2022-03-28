@@ -93,6 +93,9 @@ if [[ ! -f "${NODE_PATH}/VARS" || "$REPLACE_EXISTING_CONFIG" == "True" ]]; then
     init_config
 fi
 
+# Init pooltool config
+POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+echo {'"'api_key'"': '"'${PT_API_KEY}'"','"'pools'"': [{'"'name'"': '"'${POOL_TICKER}'"','"'pool_id'"':'"'${POOL_ID}'"','"'host'"':'"'127.0.0.1'"','"'port'"':${NODE_PORT}}]} > ${NODE_PATH}/pooltool.json
 
 #  If not doing cold-create
 if [ -z "${COLD_CREATE}" ]; then

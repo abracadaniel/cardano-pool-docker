@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# This script can be put in a crontab daily job to ensure it only runs on epoch cutover day.
+# e.g.
+# 46 13 * * * /home/westbam/haskell/everyFiveDays.sh && /home/westbam/Development/cncli/sendslots.sh
+
+CARDANO_START=$(date +%s -d "2017-09-23")
+CARDANO_START_DAY=$(( $CARDANO_START / 86400 ))
+
+NOW_TIMESTAMP=$(date +%s)
+NOW_DAY=$(( $NOW_TIMESTAMP / 86400 ))
+
+DAYS_SINCE_CARDANO_START=$(( $NOW_DAY - $CARDANO_START_DAY ))
+
+RESULT=$(( $DAYS_SINCE_CARDANO_START % 5 ))
+echo "Day number: $RESULT"
+
+if [ "$RESULT" = "0" ]; then
+  echo "Exit Success"
+  exit 0
+else
+  echo "Exit failure"
+  exit 1
+fi

@@ -201,7 +201,7 @@ You can pass the following environment variables to the container.
 | Variable | Function |
 | :-- | -- |
 | NODE_PORT | Port of node. Default: 3000. |
-| NODE_NAME | Name of node. Default: node1. |
+| NODE_NAME | Name/Ticker of node. Default: node1. |
 | NODE_TOPOLOGY | Topology of the node. Should be comma separated for each individual node to add, on the form: \<ip\>:\<port\>/\<valency\>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1. |
 | NODE_RELAY | Set to True if default IOHK relay should be added to the network topology. Default: False. |
 | HOST_ADDR | Set cardano-node host address. Defaults to public IP address. |
@@ -211,6 +211,7 @@ You can pass the following environment variables to the container.
 | PROMETHEUS_PORT | Port of Prometheus monitoring. Default: 12798. |
 | RESOLVE_HOSTNAMES | Resolve topology hostnames to IP-addresses. Default: False. |
 | REPLACE_EXISTING_CONFIG | Reset and replace existing configs. Default: False. |
+| POOL_TICKER | Pool Ticker |
 | POOL_PLEDGE | Pledge (lovelace). Default: 100000000000 |
 | POOL_COST | Operational costs per epoch (lovelace). Default: 10000000000 |
 | POOL_MARGIN | Operator margin. Default: 0.05 |
@@ -221,6 +222,9 @@ You can pass the following environment variables to the container.
 | AUTO_TOPOLOGY | Automatically update topology.json. Default: True |
 | CNCLI_SYNC | Synchronize CNCLI. Default: True |
 | STATUS_PANEL | Split screen with cardano-node and status panel. Default: False |
+| PT_API_KEY | Pooltool.io API key |
+| PT_SENDTIP | Send tip to pooltool.io. Requires PT_API_KEY. Default: False |
+| PT_SENDSLOTS | Send assigned slots to pooltool.io. Requires PT_API_KEY. Default: False |
 
 
 ## Commands
