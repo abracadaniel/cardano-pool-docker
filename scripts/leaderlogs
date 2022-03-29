@@ -5,7 +5,7 @@ source /scripts/init_node_vars
 # Init vars
 POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
 VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
-LEADERLOG=${NODE_PATH}/leaderlog.json
+LEADERLOG=${NODE_PATH}/leaderlog.txt
 LSET="${1:-current}"
 
 case ${LSET} in
