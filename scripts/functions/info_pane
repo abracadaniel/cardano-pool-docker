@@ -2,13 +2,7 @@
 
 function info_pane {
     source /scripts/init_node_vars
-    source /scripts/functions/auto_topology_start
     source /scripts/functions/wait_for_sync
-
-    if [[ $AUTO_TOPOLOGY = "True" ]];
-    then
-        auto_topology_start
-    fi
     
     wait_for_sync 99.98
 

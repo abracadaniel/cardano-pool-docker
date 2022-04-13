@@ -106,7 +106,6 @@ if [ -z "${COLD_CREATE}" ]; then
     fi
 fi
 
-
 if [ -n "$CREATE" ]; then
     create_stakepool ${COLD}
 fi
@@ -117,6 +116,11 @@ if [ -n "$START_NODE" ]; then
         # Start as staking node
         /scripts/start-stakenode
     else
+        if [[ $AUTO_TOPOLOGY = "True" ]]; then
+            source /scripts/functions/auto_topology
+            auto_topology
+        fi
+
         source /scripts/functions/run_node
         run_node
     fi
