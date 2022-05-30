@@ -201,7 +201,7 @@ You can pass the following environment variables to the container.
 | Variable | Function |
 | :-- | -- |
 | NODE_PORT | Port of node. Default: 3000. |
-| NODE_NAME | Name/Ticker of node. Default: node1. |
+| NODE_NAME | Name of node. Default: node1. |
 | NODE_TOPOLOGY | Topology of the node. Should be comma separated for each individual node to add, on the form: \<ip\>:\<port\>/\<valency\>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1. |
 | NODE_RELAY | Set to True if default IOHK relay should be added to the network topology. Default: False. |
 | HOST_ADDR | Set cardano-node host address. Defaults to public IP address. |
@@ -217,6 +217,7 @@ You can pass the following environment variables to the container.
 | POOL_MARGIN | Operator margin. Default: 0.05 |
 | METADATA_URL | URL for file containing stake pool metadata information. See \`examples/metadata.json\` for examle. The file be uploaded to an URL accessible to public. |
 | MULTI_OWNERS | Define multiple stakepool owner wallets which participates in the stakepool pledge. Comma separated values. Example: owner2,owner3. If the wallets do not exist they will automatically be created. Default: None. |
+| PUBLIC_RELAY_HOST | Hostname of Relay node. Will override PUBLIC_RELAY_IP when generating certificates and submitting topology. |
 | PUBLIC_RELAY_IP | Public IP address of Relay node. <br/><br/>Values:<br/>\<Any IP address\><br/>TOPOLOGY: Use first entry of the topology.<br/>PUBLIC: Use public IP of node.<br/>Default: TOPOLOGY. |
 | PUBLIC_RELAY_PORT | Public port of Relay node. <br/><br/>Values:<br/>\<Any Port\><br/>If PUBLIC_RELAY_IP=TOPOLOGY the PUBLIC_RELAY_PORT will also be updated accordingly.<br/>Default: First entry of the topology. |
 | AUTO_TOPOLOGY | Automatically update topology.json. Default: True |

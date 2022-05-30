@@ -86,10 +86,19 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
     fi
 
+    if [ -n "$PUBLIC_RELAY_HOST" ]; then
+        POOL_RELAY="--pool-relay-host ${PUBLIC_RELAY_HOST}"
+    else
+        POOL_RELAY="--pool-relay-ipv4 ${PUBLIC_RELAY_IP}"
+    fi
+
+
     echo "Generating pool.cert"
     stakepool_info
     echo "Public Relay IP: ${PUBLIC_RELAY_IP}"
+    echo "Public Relay Host: ${PUBLIC_RELAY_HOST}"
     echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
+    echo "POOL_RELAY: ${POOL_RELAY}"
 
     # Multiple owners
     if [ -n "$MULTI_OWNERS" ]; then

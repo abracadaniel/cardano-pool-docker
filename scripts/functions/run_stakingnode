@@ -15,7 +15,8 @@ function run_stakingnode {
 
         if [[ "$PT_SENDSLOTS"="True" ]]; then
             # Add to crontab
-            echo "00 22 * * * send_slots" >> /crontab
+            echo "0 21 * * * every_five_days && leaderlogs_cncli next" >> /crontab
+            echo "55 21 * * * every_five_days && send_slots" >> /crontab
             crontab /crontab
         fi
     fi

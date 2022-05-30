@@ -70,22 +70,7 @@ case $i in
 esac
 done
 
-EXTRA_FEE=9000
-
-if [ -z "$COLD_CREATE" ]; then
-    if [ -z "$UPDATE" ]; then
-        if [ -n "$(check_pool_registration)" ]; then
-            echo "Your stake pool has already been registered in the blockchain."
-            touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
-            exit
-        fi
-    else
-        if [ -z "$(check_pool_registration)" ]; then
-            echo "Pool is not registered in the blockchain. You cannot update the certificates. Register the stakepool first."
-            exit
-        fi
-    fi
-fi
+EXTRA_FEE=15000
 
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
@@ -217,7 +202,7 @@ if [ -z "$COLD_CREATE" ]; then
 
         # Wait for blockchain to register the pool
         #wait_for_slot ${TTL}
-        wait_for_pool_registration
+        #wait_for_pool_registration
         echo "Your stake pool registration has been sent to the blockchain."
         touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
     fi

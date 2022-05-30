@@ -15,7 +15,12 @@ mkdir -p ${NODE_PATH}/logs/
 
 NWMAGIC=$(jq -r .networkMagic < ${NODE_PATH}/shelley-genesis.json)
 BLOCK=$(get_block)
-PUBLIC_IP=$(get_public_ip)
+
+if [ -n "$PUBLIC_RELAY_HOST" ]; then
+    PUBLIC_IP=${PUBLIC_RELAY_HOST}
+else
+    PUBLIC_IP=$(get_public_ip)
+fi
 
 echo "Submitting node IP to api.clio.one" | tee -a $LOG_FILE
 
