@@ -9,6 +9,7 @@ SHELLEY_GENESIS=${NODE_PATH}/shelley-genesis.json
 VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
 SNAPSHOT=/tmp/stake-snapshot.json
 LSET="${1:-current}"
+TZ=$(cat /etc/timezone)
 
 case ${LSET} in
   prev|current|next) echo "Running leaderlogs for ${LSET} epoch" ;;
@@ -29,4 +30,5 @@ cncli leaderlog --db ${NODE_PATH}/cncli.db \
   --shelley-genesis ${SHELLEY_GENESIS} \
   --active-stake ${ACTIVE_STAKE} \
   --pool-stake ${POOL_STAKE} \
+  --tz ${TZ} \
   --ledger-set ${LSET} | tee ${NODE_PATH}/leaderlog_cncli.json

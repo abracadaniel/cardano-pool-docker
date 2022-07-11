@@ -87,7 +87,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
     fi
 
     if [ -n "$PUBLIC_RELAY_HOST" ]; then
-        POOL_RELAY="--pool-relay-host ${PUBLIC_RELAY_HOST}"
+        POOL_RELAY="--single-host-pool-relay ${PUBLIC_RELAY_HOST}"
     else
         POOL_RELAY="--pool-relay-ipv4 ${PUBLIC_RELAY_IP}"
     fi
@@ -122,7 +122,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         --pool-owner-stake-verification-key-file wallets/owner/stake.vkey \
         ${MULTIOWNERS_STRING} \
         --pool-relay-port ${PUBLIC_RELAY_PORT} \
-        --pool-relay-ipv4 ${PUBLIC_RELAY_IP} \
+        ${POOL_RELAY} \
         --metadata-url ${METADATA_URL} \
         --metadata-hash ${METADATA_HASH} \
         ${NETWORK_ARGUMENT} \
