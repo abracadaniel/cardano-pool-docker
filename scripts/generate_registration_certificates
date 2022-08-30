@@ -121,8 +121,8 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         --pool-reward-account-verification-key-file wallets/owner/stake.vkey \
         --pool-owner-stake-verification-key-file wallets/owner/stake.vkey \
         ${MULTIOWNERS_STRING} \
-        --pool-relay-port ${PUBLIC_RELAY_PORT} \
         ${POOL_RELAY} \
+        --pool-relay-port ${PUBLIC_RELAY_PORT} \
         --metadata-url ${METADATA_URL} \
         --metadata-hash ${METADATA_HASH} \
         ${NETWORK_ARGUMENT} \
