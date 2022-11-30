@@ -27,16 +27,15 @@ COPY --from=libs /usr/local/lib/libsecp256k1* /usr/local/lib/
 
 # Install cardano-node
 ARG VERSION
-RUN echo "Building tags/$VERSION..." \
-    && echo tags/$VERSION > /CARDANO_BRANCH \
+RUN echo "Building tags/${VERSION}..." \
+    && echo tags/${VERSION} > /CARDANO_BRANCH \
     && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
-    && git checkout tags/$VERSION 
+    && git checkout tags/${VERSION}
 RUN cd cardano-node \
     && echo "with-compiler: ghc-${GHC_VERSION}" >> cabal.project.local \
-    && ./scripts/add-from-github.sh \
     && cabal build all \
     && mkdir -p /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-node)" /root/.local/bin/ \

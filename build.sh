@@ -13,14 +13,13 @@ docker build -f Dockerfile.libs \
 
 #docker build -f Dockerfile.node \
 #    --build-arg VERSION=${NODE_VERSION} \
-#    --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
 #    --tag arradev/cardano-node:${NODE_VERSION} \
 #    --tag arradev/cardano-node:latest .
 
-#docker build -f Dockerfile.addresses \
-#    --build-arg VERSION=${ADDRESSES_VERSION} \
-#    --tag arradev/cardano-addresses:${ADDRESSES_VERSION} \
-#    --tag arradev/cardano-addresses:latest .
+docker build -f Dockerfile.addresses \
+    --build-arg VERSION=${ADDRESSES_VERSION} \
+    --tag arradev/cardano-addresses:${ADDRESSES_VERSION} \
+    --tag arradev/cardano-addresses:latest .
 
 docker build -f Dockerfile.bech32 \
     --build-arg VERSION=${BECH_VERSION} \
