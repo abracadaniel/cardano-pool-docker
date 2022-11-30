@@ -17,19 +17,12 @@ RUN apt-get update -y && apt-get install -y vim procps dnsutils bc curl nano cro
 RUN pip3 install pytz
 
 # Copy compiled binaries
-#COPY --from=node /usr/local/bin/cardano* /bin/
-COPY --from=libs /usr/local/lib/libsodium* /lib/
-COPY --from=libs /usr/local/lib/libsecp256k1* /lib/
+COPY --from=node /bin/cardano* /bin/
+COPY --from=node /lib/libsodium* /lib/
+COPY --from=node /lib/libsecp256k1* /lib/
 COPY --from=cncli /bin/cncli /bin/
 COPY --from=addresses /bin/cardano-address /bin/
 COPY --from=bech32 /bin/bech32 /bin/
-
-# Use precompiled cardano-node and cardano-cli
-RUN mkdir cardano-node && cd cardano-node \
-    && wget https://hydra.iohk.io/build/21343721/download/1/cardano-node-1.35.4-linux.tar.gz \
-    && tar -xvf cardano-node-1.35.4-linux.tar.gz \
-    && rm -rf https://hydra.iohk.io/build/21343721/download/1/cardano-node-1.35.4-linux.tar.gz \
-    && cp cardano-node cardano-cli /bin/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus

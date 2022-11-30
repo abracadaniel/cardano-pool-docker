@@ -7,14 +7,10 @@ BECH_VERSION="1.1.2"
 CNCLI_VERSION="4.0.4"
 POOL_VERSION="1.35.4-1"
 
-docker build -f Dockerfile.libs \
-    --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
-    --tag arradev/cardano-node-libs:latest .
-
-#docker build -f Dockerfile.node \
-#    --build-arg VERSION=${NODE_VERSION} \
-#    --tag arradev/cardano-node:${NODE_VERSION} \
-#    --tag arradev/cardano-node:latest .
+docker build -f Dockerfile.node \
+    --build-arg VERSION=${NODE_VERSION} \
+    --tag arradev/cardano-node:${NODE_VERSION} \
+    --tag arradev/cardano-node:latest .
 
 docker build -f Dockerfile.addresses \
     --build-arg VERSION=${ADDRESSES_VERSION} \
