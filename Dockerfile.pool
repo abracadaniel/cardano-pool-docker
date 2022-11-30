@@ -1,10 +1,12 @@
-FROM arradev/cardano-node:latest AS node
-FROM arradev/cardano-address:latest AS address
+ARG NODE_VERSION
+
+FROM inputoutput/cardano-node:${NODE_VERSION} AS node
+FROM inputoutput/cardano-addresses:latest AS addresses
+FROM arradev/cardano-node-libs:latest AS libs
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
-#FROM arradev/cardano-voting:latest AS voting
 FROM debian:stable-20210816-slim
-LABEL maintainer="dro@arrakis.it"
+LABEL maintainer="droe@pm.me"
 
 SHELL ["/bin/bash", "-c"]
 WORKDIR /
@@ -16,10 +18,10 @@ RUN pip3 install pytz
 
 # Copy compiled binaries
 COPY --from=node /bin/cardano* /bin/
-COPY --from=node /lib/libsodium* /lib/
-COPY --from=node /lib/libsecp256k1* /lib/
+COPY --from=libs /usr/local/lib/libsodium* /lib/
+COPY --from=libs /usr/local/lib/libsecp256k1* /lib/
 COPY --from=cncli /bin/cncli /bin/
-COPY --from=address /bin/cardano-address /bin/
+COPY --from=addresses /bin/cardano-address /bin/
 COPY --from=bech32 /bin/bech32 /bin/
 #COPY --from=voting /bin/voting-tools /bin/
 #COPY --from=voting /bin/voter-registration /bin/
@@ -54,7 +56,7 @@ ENV NODE_PORT="3000" \
     STATUS_PANEL="False" \
     PT_API_KEY="" \
     PT_SENDTIP="False" \
-    PT_SENTSLOTS="False" \
+    PT_SENDSLOTS="False" \
     LANG="C.UTF-8"
 
 # Add config

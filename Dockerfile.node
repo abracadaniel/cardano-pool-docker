@@ -1,10 +1,10 @@
+FROM arradev/cardano-node-libs:latest AS libs
 FROM debian:buster-slim as build
-LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
 RUN apt-get update -y \
-    && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 libtool autoconf liblmdb-dev \
-    && apt-get install -y libsqlite3-dev m4 ca-certificates gcc libc6-dev  curl \
+    && apt-get install automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 libtool autoconf liblmdb-dev -y \
+    && apt-get install -y libsqlite3-dev m4 ca-certificates gcc libc6-dev curl \
     && apt-get clean
 
 # Install GHC
@@ -18,27 +18,12 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
     && ghcup set cabal ${CABAL_VERSION}
 
 # Install libsodium
-ARG LIBSODIUM_VERSION
-RUN git clone https://github.com/input-output-hk/libsodium \
-    && cd libsodium \
-    && git fetch --all --recurse-submodules --tags \
-    && git tag \
-    && git checkout $LIBSODIUM_VERSION \
-    && ./autogen.sh \
-    && ./configure \
-    && make \
-    && make install \
-    && cd .. && rm -rf libsodium
+COPY --from=libs /usr/local/lib/libsodium* /usr/local/lib/
 ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Install Secp256k1
-RUN git clone https://github.com/bitcoin-core/secp256k1 \
-    && cd secp256k1 \
-    && git checkout ac83be33 \
-    && ./autogen.sh \
-    && ./configure --enable-module-schnorrsig --enable-experimental \
-    && make && make install
+COPY --from=libs /usr/local/lib/libsecp256k1* /usr/local/lib/
 
 # Install cardano-node
 ARG VERSION
@@ -48,10 +33,10 @@ RUN echo "Building tags/$VERSION..." \
     && cd cardano-node \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
-    && git checkout tags/$VERSION \
-    && cabal configure --with-compiler=ghc-${GHC_VERSION} \
-    && echo "package cardano-crypto-praos" >>  cabal.project.local \
-    && echo "  flags: -external-libsodium-vrf" >>  cabal.project.local \
+    && git checkout tags/$VERSION 
+RUN cd cardano-node \
+    && echo "with-compiler: ghc-${GHC_VERSION}" >> cabal.project.local \
+    && ./scripts/add-from-github.sh \
     && cabal build all \
     && mkdir -p /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-node)" /root/.local/bin/ \
@@ -59,7 +44,6 @@ RUN echo "Building tags/$VERSION..." \
 
 # Run
 FROM debian:stable-slim
-LABEL maintainer="dro@arrakis.it"
 
 COPY --from=build /root/.local/bin/ /bin/
 COPY --from=build /usr/local/lib/ /lib/

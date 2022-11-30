@@ -1,26 +1,26 @@
 #!/bin/bash
 
-NODE_VERSION="1.35.3"
+NODE_VERSION="1.35.4"
 LIBSODIUM_VERSION="66f017f1"
-ADDRESS_VERSION="3.12.0"
+ADDRESSES_VERSION="3.12.0"
 BECH_VERSION="1.1.2"
 CNCLI_VERSION="4.0.4"
-POOL_VERSION="1.35.3-2"
+POOL_VERSION="1.35.4-1"
 
-docker build -f Dockerfile.node \
-    --build-arg VERSION=${NODE_VERSION} \
+docker build -f Dockerfile.libs \
     --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
-    --tag arradev/cardano-node:${NODE_VERSION} \
-    --tag arradev/cardano-node:latest .
+    --tag arradev/cardano-node-libs:latest .
 
-docker build -f Dockerfile.address \
-    --build-arg VERSION=${ADDRESS_VERSION} \
-    --tag arradev/cardano-address:${ADDRESS_VERSION} \
-    --tag arradev/cardano-address:latest .
-
-#docker build -f Dockerfile.voting \
+#docker build -f Dockerfile.node \
+#    --build-arg VERSION=${NODE_VERSION} \
 #    --build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
-#    --tag arradev/cardano-voting:latest .
+#    --tag arradev/cardano-node:${NODE_VERSION} \
+#    --tag arradev/cardano-node:latest .
+
+#docker build -f Dockerfile.addresses \
+#    --build-arg VERSION=${ADDRESSES_VERSION} \
+#    --tag arradev/cardano-addresses:${ADDRESSES_VERSION} \
+#    --tag arradev/cardano-addresses:latest .
 
 docker build -f Dockerfile.bech32 \
     --build-arg VERSION=${BECH_VERSION} \
@@ -33,6 +33,7 @@ docker build -f Dockerfile.cncli \
     --tag arradev/cncli:latest .
 
 docker build -f Dockerfile.pool \
+    --build-arg NODE_VERSION=${NODE_VERSION} \
     --tag arradev/cardano-pool:${POOL_VERSION} \
     --tag arradev/cardano-pool:latest .
 

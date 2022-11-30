@@ -1,6 +1,6 @@
 # Running a Cardano Stake Pool
 
-Visit my stake pool @ [ada.arrakis.it](https://ada.arrakis.it).
+Visit my stake pool @ [arrapool.io](https://arrapool.io).
 
 From the official [cardano-node setup](https://docs.cardano.org/projects/cardano-node/en/latest/) tutorials from IOHK.
 The container downloads and builds the [cardano-node](https://github.com/input-output-hk/cardano-node.git).
@@ -298,12 +298,3 @@ git clone https://github.com/abracadaniel/cardano-node-docker.git
 cd cardano-node-docker
 ./build.sh
 ```
-
-
-## Thank you
-
-I hope you will find this useful. If you like the work please consider delegating to my pool:
-`[ARRA] Arrakis (c65ca06828caa8fc9b0bb015af93ef71685544c6ed2abbb7c59b0e62)`
-
-or donating a few ADA to:
-`addr1qys4rnfu5suydj480gwlnxxfkazjscy5j3ekgrnywvqht6ujn4up3dddmmul3a5p98996dyd5nhn2mwthwce6rjrp0esqtey6p`

@@ -1,5 +1,4 @@
 FROM debian:buster-slim as build
-LABEL maintainer="dro@arrakis.it"
 
 # Install build dependencies
 RUN apt-get update -y \
