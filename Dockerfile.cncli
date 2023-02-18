@@ -9,8 +9,7 @@ RUN apt-get update -y \
 # Install rust
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.47.0
+    PATH=/usr/local/cargo/bin:$PATH
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN cat /usr/local/cargo/env
@@ -22,7 +21,7 @@ RUN rustup install stable \
 # Install cncli
 ARG VERSION
 RUN echo "Building tags/v$VERSION..." \
-    && git clone --recurse-submodules https://github.com/AndrewWestberg/cncli \
+    && git clone --recurse-submodules https://github.com/cardano-community/cncli \
     && cd cncli \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
