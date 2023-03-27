@@ -2,7 +2,6 @@ ARG NODE_VERSION
 
 FROM arradev/cardano-node:${NODE_VERSION} AS node
 FROM arradev/cardano-addresses:latest AS addresses
-FROM arradev/cardano-node-libs:latest AS libs
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
 FROM debian:stable-20210816-slim
@@ -55,7 +54,8 @@ ENV NODE_PORT="3000" \
     PT_API_KEY="" \
     PT_SENDTIP="False" \
     PT_SENDSLOTS="False" \
-    LANG="C.UTF-8"
+    LANG="C.UTF-8" \
+    ENABLEP2P="False"
 
 # Add config
 ADD cfg-templates/ /cfg-templates/

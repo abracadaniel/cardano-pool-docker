@@ -6,8 +6,9 @@ function run_node {
     while true; do
         echo "Starting cardano-node"
         node_info
+        echo ${TOPOLOGY_PATH}
         cardano-node run \
-            --topology ${NODE_PATH}/topology.json \
+            --topology ${TOPOLOGY_PATH} \
             --database-path ${NODE_PATH}/db \
             --socket-path ${CARDANO_NODE_SOCKET_PATH} \
             --host-addr ${HOST_ADDR} \

@@ -43,6 +43,7 @@ function help {
     echo "POOL_COST                     Operational costs per epoch (lovelace). Default: 10000000000"
     echo "POOL_MARGIN                   Operator margin. Default: 0.05"
     echo "CNCLI_SYNC                    Run cncli sync. Default: True"
+    echo "ENABLEP2P                     Enable P2P Topology. Default: False"
 
     exit
 }
@@ -93,6 +94,16 @@ if [[ ! -f "${NODE_PATH}/VARS" || "$REPLACE_EXISTING_CONFIG" == "True" ]]; then
     init_config
 fi
 
+if [[ $ENABLEP2P = "True" ]]; then
+    mv ${NODE_PATH}/config.json /tmp/config.json
+    cat /tmp/config.json | jq .EnableP2P=true > ${NODE_PATH}/config.json
+else
+    mv ${NODE_PATH}/config.json /tmp/config.json
+    cat /tmp/config.json | jq .EnableP2P=false > ${NODE_PATH}/config.json
+fi
+
+
+
 # Init pooltool config
 POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
 echo {'"'api_key'"': '"'${PT_API_KEY}'"','"'pools'"': [{'"'name'"': '"'${POOL_TICKER}'"','"'pool_id'"':'"'${POOL_ID}'"','"'host'"':'"'127.0.0.1'"','"'port'"':${NODE_PORT}}]} > ${NODE_PATH}/pooltool.json
@@ -116,6 +127,19 @@ if [ -n "$START_NODE" ]; then
         # Start as staking node
         /scripts/start-stakenode
     else
+        export EnableP2P=$(cat ${NODE_PATH}/config.json | jq .EnableP2P)
+        if [[ $EnableP2P = "true" ]]; then
+            echo "P2P Topology: true"
+            export TOPOLOGY_PATH=${NODE_PATH}/topology-p2p.json
+
+            if [ ! -f ${TOPOLOGY_PATH} ]; then
+                echo "Create P2P Topology"
+                cp /cfg-templates/${CARDANO_NETWORK}/topology-relay-p2p.json ${NODE_PATH}/topology-p2p.json
+            fi
+        else
+            export TOPOLOGY_PATH=${NODE_PATH}/topology.json
+        fi
+
         if [[ $AUTO_TOPOLOGY = "True" ]]; then
             source /scripts/functions/auto_topology
             auto_topology

@@ -226,6 +226,7 @@ You can pass the following environment variables to the container.
 | PT_API_KEY | Pooltool.io API key |
 | PT_SENDTIP | Send tip to pooltool.io. Requires PT_API_KEY. Default: False |
 | PT_SENDSLOTS | Send assigned slots to pooltool.io. Requires PT_API_KEY. Default: False |
+| ENABLEP2P | Enable P2P Topology. Default: False |
 
 
 ## Commands
