@@ -52,6 +52,7 @@ def init_args():
     args.BYRON_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'byron-genesis.json')
     args.SHELLEY_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'shelley-genesis.json')
     args.ALONZO_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'alonzo-genesis.json')
+    args.CONWAY_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'conway-genesis.json')
     args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology.json')
     args.CONFIG_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'config.json')
     args.VARS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'VARS')
@@ -66,9 +67,14 @@ def init_folder(args):
 def init_genesis(args):
     """Initializes the genesis file"""
 
+    CONWAY_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'conway-genesis.json')
     ALONZO_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'alonzo-genesis.json')
     SHELLEY_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'shelley-genesis.json')
     BYRON_SRC = os.path.join(args.CONFIG_TEMPLATES_PATH, 'byron-genesis.json')
+
+    if not os.path.exists(args.CONWAY_GENESIS_PATH) or args.replace_existing:
+        print('Generating new conway genesis file %s from template %s' % (args.CONWAY_GENESIS_PATH, CONWAY_SRC))
+        shutil.copy(CONWAY_SRC, args.CONWAY_GENESIS_PATH)
 
     if not os.path.exists(args.ALONZO_GENESIS_PATH) or args.replace_existing:
         print('Generating new alonzo genesis file %s from template %s' % (args.ALONZO_GENESIS_PATH, ALONZO_SRC))
@@ -141,18 +147,26 @@ def init_topology(args):
 def init_config(args):
     """Initializes the config file"""
 
-    INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'config.json')
-
     if not os.path.exists(args.CONFIG_PATH) or args.replace_existing:
+        INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'config.json')
+
         print('Generating new config file %s from template %s' % (args.CONFIG_PATH, INPUT_PATH))
 
         data = load_json(INPUT_PATH)
         data['hasEKG'] = args.ekg_port
         data['hasPrometheus'] = [args.prometheus_host, args.prometheus_port]
-        data['ShelleyGenesisFile'] = args.SHELLEY_GENESIS_PATH
-        data['ByronGenesisFile'] = args.BYRON_GENESIS_PATH
-        data['AlonzoGenesisFile'] = args.ALONZO_GENESIS_PATH
         save_json(args.CONFIG_PATH, data)
+
+    # Set genesis
+    print('Updating config %s' % (args.CONFIG_PATH))
+    INPUT_PATH2 = os.path.join(args.CONFIG_PATH)
+    data2 = load_json(INPUT_PATH2)
+    data2['ShelleyGenesisFile'] = args.SHELLEY_GENESIS_PATH
+    data2['ByronGenesisFile'] = args.BYRON_GENESIS_PATH
+    data2['AlonzoGenesisFile'] = args.ALONZO_GENESIS_PATH
+    data2['ConwayGenesisFile'] = args.CONWAY_GENESIS_PATH
+    save_json(args.CONFIG_PATH, data2)
+
 
 def init_vars(args):
     INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'VARS')
