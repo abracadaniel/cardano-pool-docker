@@ -6,14 +6,15 @@ function run_stakingnode {
     node_info 1
 
     # CNCLI sync
-    if [[ "$CNCLI_SYNC"="True" ]]; then
+    if [[ $CNCLI_SYNC = "True" ]]; then
+        echo "Starting cncli"
         cncli sync --host 127.0.0.1 --port $NODE_PORT --db ${NODE_PATH}/cncli.db &
 
-        if [[ "$PT_SENDTIP"="True" ]]; then
+        if [[ $PT_SENDTIP = "True" ]]; then
             cncli sendtip --cardano-node /bin/cardano-node --config ${NODE_PATH}/pooltool.json &
         fi
 
-        if [[ "$PT_SENDSLOTS"="True" ]]; then
+        if [[ $PT_SENDSLOTS = "True" ]]; then
             # Add to crontab
             echo "0 21 * * * every_five_days && leaderlogs_cncli next" >> /crontab
             echo "55 21 * * * every_five_days && send_slots" >> /crontab

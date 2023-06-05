@@ -16,5 +16,6 @@ function node_info {
     echo "Node path: ${NODE_PATH}"
     echo "EKG Port: ${EKG_PORT}"
     echo "Prometheus Port: ${PROMETHEUS_PORT}"
+    echo "CNCLI: ${CNCLI_SYNC}"
 
 }

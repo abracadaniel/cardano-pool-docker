@@ -3,10 +3,19 @@
 source /scripts/functions/get_public_ip
 source /scripts/functions/wait_for_sync
 
+PIDFILE="/tmp/topology_submit.pid"
+
+if [ -e "${PIDFILE}" ]; then
+  echo "Already running."
+  exit 0
+fi
+
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
     wait_for_sync 99.98
 fi
+
+touch $PIDFILE
 
 TIMESTAMP=$(date +%s)
 LOG_FILE=${NODE_PATH}/logs/submit_topology.${TIMESTAMP}.json.log
@@ -32,3 +41,5 @@ echo "Port: ${NODE_PORT}" | tee -a $LOG_FILE
 curl -v "https://api.clio.one/htopology/v1/?port=${NODE_PORT}&blockNo=${BLOCK}&valency=1&magic=${NWMAGIC}" | tee -a $LOG_FILE
 
 cat $LOG_FILE
+
+rm -rf $PIDFILE

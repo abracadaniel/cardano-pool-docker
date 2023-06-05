@@ -141,8 +141,9 @@ if [ -n "$START_NODE" ]; then
         fi
 
         if [[ $AUTO_TOPOLOGY = "True" ]]; then
-            source /scripts/functions/auto_topology
-            auto_topology
+            cp /cfg-templates/crontab /crontab
+            service cron start
+            crontab /crontab
         fi
 
         source /scripts/functions/run_node

@@ -1,0 +1,17 @@
+#!/bin/bash -l
+
+PIDFILE="/tmp/topology_update.pid"
+
+echo "start"
+if [ -e "${PIDFILE}" ]; then
+  echo "Already running."
+  exit 0
+fi
+
+touch $PIDFILE
+
+echo "run this"
+sleep 10
+echo "done"
+
+rm -rf $PIDFILE

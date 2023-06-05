@@ -16,6 +16,6 @@ function wait_for_sync {
             echo -e "${CHECK_MARK} Done."
             break
         fi
-        sleep 5
+        sleep 30
     done
 }
