@@ -141,9 +141,9 @@ if [ -n "$START_NODE" ]; then
         fi
 
         if [[ $AUTO_TOPOLOGY = "True" ]]; then
-            cp /cfg-templates/crontab /crontab
-            service cron start
-            crontab /crontab
+            echo "30 * * * * /scripts/topology_submit" >> /crontab
+            echo "45 * * * * /scripts/topology_update" >> /crontab
+            ensure_cron_running
         fi
 
         source /scripts/functions/run_node
