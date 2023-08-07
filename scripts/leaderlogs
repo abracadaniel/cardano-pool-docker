@@ -5,19 +5,21 @@ source /scripts/init_node_vars
 # Init vars
 POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
 VRF=${NODE_PATH}/staking/pool-keys/vrf.skey
-LEADERLOG=${NODE_PATH}/leaderlog.txt
 LSET="${1:-current}"
 
 case ${LSET} in
-  prev|current|next) echo "Running leaderlogs for ${LSET} epoch" ;;
-  *)                 echo "Invalid argument. Must be either prev|current|next"; exit ;;
+  current) EPOCH=$(current_epoch) ;;
+  next)    EPOCH=$(($(current_epoch)+1)) ;;
+  *)       echo "Invalid argument. Must be either current|next"; exit ;;
 esac
 
-# Get leaderlogs
-echo "Running leaderlogs"
+echo "Running leaderlogs for ${LSET} epoch ${EPOCH}"
+
+mkdir -p ${NODE_PATH}/leaderlogs
+
 cardano-cli query leadership-schedule \
    ${NETWORK_ARGUMENT} \
    --genesis ${NODE_PATH}/shelley-genesis.json \
    --stake-pool-id ${POOL_ID} \
    --vrf-signing-key-file ${VRF} \
-   --${LSET} | tee ${LEADERLOG}
+   --${LSET} | tee ${NODE_PATH}/leaderlogs/${EPOCH}.txt
