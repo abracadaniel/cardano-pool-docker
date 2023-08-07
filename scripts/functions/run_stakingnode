@@ -18,8 +18,13 @@ function run_stakingnode {
             # Add to crontab
             echo "0 21 * * * every_five_days && leaderlogs_cncli next" >> /crontab
             echo "55 21 * * * every_five_days && send_slots" >> /crontab
-            crontab /crontab
+            ensure_cron_running
         fi
+    fi
+
+    if [[ $CEXPLORER_STATS = "True" ]]; then
+        echo "0 0 * * * /scripts/cexplorer_pool_stats" >> /crontab
+        ensure_cron_running
     fi
 
     # Running in loop allows for restarting without restarting the container

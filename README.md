@@ -222,6 +222,7 @@ You can pass the following environment variables to the container.
 | PUBLIC_RELAY_PORT | Public port of Relay node. <br/><br/>Values:<br/>\<Any Port\><br/>If PUBLIC_RELAY_IP=TOPOLOGY the PUBLIC_RELAY_PORT will also be updated accordingly.<br/>Default: First entry of the topology. |
 | AUTO_TOPOLOGY | Automatically update topology.json. Default: True |
 | CNCLI_SYNC | Synchronize CNCLI. Default: True |
+| CEXPLORER_STATS | Daily cronjob to pull stats from cexplorer.io for prometheus node exporter. Default: False |
 | STATUS_PANEL | Split screen with cardano-node and status panel. Default: False |
 | PT_API_KEY | Pooltool.io API key |
 | PT_SENDTIP | Send tip to pooltool.io. Requires PT_API_KEY. Default: False |

@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+source /scripts/init_node_vars
+
+POOL_ID=$(bech32 pool <<< $(cat ${NODE_PATH}/staking/POOL_ID))
+
+POOL_STATS_DIR=${NODE_PATH}/pool_stats
+mkdir -p POOL_STATS_DIR
+
+curl https://js.cexplorer.io/api-static/pool/${POOL_ID}.json 2>/dev/null | jq '.data' | jq 'del(.stats, .url , .img, .updated, .handles, .pool_id, .name, .pool_id_hash)' | tr -d \\\"{},: | awk NF | sed -e 's/^[ \t]*/cexplorer_/' > ${POOL_STATS_DIR}/cexplorer.prom

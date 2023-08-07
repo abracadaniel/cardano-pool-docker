@@ -1,0 +1,6 @@
+#!/bin/bash
+
+function ensure_cron_running {
+  crontab /crontab
+  service cron start
+}
