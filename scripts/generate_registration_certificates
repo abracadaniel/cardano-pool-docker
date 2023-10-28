@@ -75,30 +75,43 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         cp pool.cert pool.${TIMESTAMP}.cert
     fi
 
-    if [ "${PUBLIC_RELAY_IP}" == "TOPOLOGY" ]; then
-        PUBLIC_RELAY_IP=$(jq -r ".Producers[0].addr" ${NODE_PATH}/topology.json)
-        PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
-    fi
-    if [ "${PUBLIC_RELAY_IP}" == "PUBLIC" ]; then
-        PUBLIC_RELAY_IP=$(get_public_ip)
-    fi
-    if [ -z "$PUBLIC_RELAY_PORT" ]; then
-        PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
-    fi
-
-    if [ -n "$PUBLIC_RELAY_HOST" ]; then
-        POOL_RELAY="--single-host-pool-relay ${PUBLIC_RELAY_HOST}"
-    else
-        POOL_RELAY="--pool-relay-ipv4 ${PUBLIC_RELAY_IP}"
-    fi
-
-
     echo "Generating pool.cert"
     stakepool_info
-    echo "Public Relay IP: ${PUBLIC_RELAY_IP}"
-    echo "Public Relay Host: ${PUBLIC_RELAY_HOST}"
-    echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
-    echo "POOL_RELAY: ${POOL_RELAY}"
+
+
+    # Collect relay information
+    POOL_RELAYS=""
+
+    if [ -z "$PUBLIC_RELAY_HOSTS" ]; then
+        IFS=',' read -ra hosts <<< "$PUBLIC_RELAY_HOSTS"
+        for host_port in "${hosts[@]}"; do
+          IFS=':' read -ra parts <<< "$host_port"
+          if [ "${#parts[@]}" -eq 2 ]; then
+            host="${parts[0]}"
+            port="${parts[1]}"
+
+            POOL_RELAYS="$POOL_RELAYS --single-host-pool-relay $host --pool-relay-port $port"
+            echo "POOL RELAY: ${host}:${port}"
+          else
+            echo "Invalid format in PUBLIC_RELAY_HOSTS: $host_port."
+            exit
+          fi
+        done
+    else
+        if [ "${PUBLIC_RELAY_IP}" == "TOPOLOGY" ]; then
+            relay_ip=$(jq -r ".Producers[0].addr" ${NODE_PATH}/topology.json)
+            port=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+        fi
+        if [ "${PUBLIC_RELAY_IP}" == "PUBLIC" ]; then
+            relay_ip=$(get_public_ip)
+        fi
+        if [ -z "$PUBLIC_RELAY_PORT" ]; then
+            relay_port=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+        fi
+
+        POOL_RELAYS="--pool-relay-ipv4 ${relay_ip} --pool-relay-port ${relay_port}"
+        echo "POOL RELAY: ${relay_ip}:${relay_port}"
+    fi
 
     # Multiple owners
     if [ -n "$MULTI_OWNERS" ]; then
@@ -121,8 +134,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         --pool-reward-account-verification-key-file wallets/owner/stake.vkey \
         --pool-owner-stake-verification-key-file wallets/owner/stake.vkey \
         ${MULTIOWNERS_STRING} \
-        ${POOL_RELAY} \
-        --pool-relay-port ${PUBLIC_RELAY_PORT} \
+        ${POOL_RELAYS##*( )} \
         --metadata-url ${METADATA_URL} \
         --metadata-hash ${METADATA_HASH} \
         ${NETWORK_ARGUMENT} \
