@@ -217,6 +217,7 @@ You can pass the following environment variables to the container.
 | POOL_MARGIN | Operator margin. Default: 0.05 |
 | METADATA_URL | URL for file containing stake pool metadata information. See \`examples/metadata.json\` for examle. The file be uploaded to an URL accessible to public. |
 | MULTI_OWNERS | Define multiple stakepool owner wallets which participates in the stakepool pledge. Comma separated values. Example: owner2,owner3. If the wallets do not exist they will automatically be created. Default: None. |
+| HOSTNAME | Hostname used for submitting topology. Otherwise the public IP address is submitted.
 | PUBLIC_RELAY_HOSTS | Comma seperated list of relay hostnames with port information. Format: \<host\>:\<port\>,\<host\>:\<port\> - Overrides PUBLIC_RELAY_IP when generating certificates and submitting topology. |
 | PUBLIC_RELAY_IP | Public IP address of Relay node. <br/><br/>Values:<br/>\<Any IP address\><br/>TOPOLOGY: Use first entry of the topology.<br/>Default: TOPOLOGY. |
 | PUBLIC_RELAY_PORT | Public port of Relay node. <br/><br/>Values:<br/>\<Any Port\><br/>If PUBLIC_RELAY_IP=TOPOLOGY the PUBLIC_RELAY_PORT will also be updated accordingly.<br/>Default: First entry of the topology. |
@@ -274,7 +275,7 @@ The latest supported networks can be found at [https://hydra.iohk.io/job/Cardano
 
 ## Example scripts
 
-Use these example scripts to see how the nodes can be started. 
+Use these example scripts to see how the nodes can be started.
 
 | Script | Description |
 | :-- | -- |

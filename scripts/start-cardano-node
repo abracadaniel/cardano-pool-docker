@@ -7,6 +7,7 @@ source /scripts/init_node_vars
 source /scripts/functions/run_node
 source /scripts/functions/get_public_ip
 source /scripts/functions/init_config
+source /scripts/functions/ensure_cron_running
 
 function help {
     echo "Arguments:"
@@ -141,8 +142,14 @@ if [ -n "$START_NODE" ]; then
         fi
 
         if [[ $AUTO_TOPOLOGY = "True" ]]; then
+            # We always want to submit our node for others not running in P2P mode
             echo "30 * * * * /scripts/topology_submit" >> /crontab
-            echo "45 * * * * /scripts/topology_update" >> /crontab
+
+            # We keep our topology updated unless P2P is enabled
+            if [[ $EnableP2P != "true" ]]; then
+                echo "45 * * * * /scripts/topology_update" >> /crontab
+            fi
+
             ensure_cron_running
         fi
 
