@@ -6,5 +6,5 @@ if __name__ == '__main__':
 
     _topology = []
     for t in topology:
-        _topology.append('%s:%s:%s' % (t.get('addr'), t.get('port'), t.get('valency')))
+        _topology.append('%s,%s,%s' % (t.get('addr'), t.get('port'), t.get('valency')))
     print('|'.join(_topology))
