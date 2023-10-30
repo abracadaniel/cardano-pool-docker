@@ -82,7 +82,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
     # Collect relay information
     POOL_RELAYS=""
 
-    if [ -z "$PUBLIC_RELAY_HOSTS" ]; then
+    if [ -n "$PUBLIC_RELAY_HOSTS" ]; then
         IFS=',' read -ra hosts <<< "$PUBLIC_RELAY_HOSTS"
         for host_port in "${hosts[@]}"; do
           IFS=':' read -ra parts <<< "$host_port"
