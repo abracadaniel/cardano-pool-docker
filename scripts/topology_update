@@ -12,37 +12,64 @@ for i in "$@"; do
 done
 
 source /scripts/functions/get_public_ip
+source /scripts/functions/validations
 
-cd ${NODE_PATH}
+echo -n "Updating topology.json ... "
 
-echo -n "Updating topology.json ..."
-
+TOPOLOGY_FILE=${NODE_PATH}/topology.json
 NWMAGIC=$(jq -r .networkMagic < ${NODE_PATH}/shelley-genesis.json)
 CUSTOM_PEERS=$(python3 /scripts/get_topology_str.py)
 
-curl -s -o ${NODE_PATH}/topology.auto.json "https://api.clio.one/htopology/v1/fetch/?max=14&magic=${NWMAGIC}&customPeers=${CUSTOM_PEERS}"
-PRODUCERS=$(jq -r .Producers < ${NODE_PATH}/topology.auto.json)
+curl -s -f -o "${TOPOLOGY_FILE}".tmp "https://api.clio.one/htopology/v1/fetch/?max=14&magic=${NWMAGIC}"
+
+[[ ! -s "${TOPOLOGY_FILE}".tmp ]] && echo "ERROR: The downloaded topology file is empty!" && exit 1
+PRODUCERS=$(jq -r .Producers < "${TOPOLOGY_FILE}".tmp)
 
 if [[ "${PRODUCERS}" == "null" ]]; then
-    echo " ${CROSS_MARK} Error."
-    cat ${NODE_PATH}/topology.auto.json
+    echo "${CROSS_MARK} Error." && cat "${TOPOLOGY_FILE}".tmp
 
     if [[ -n "$RETRY" ]]; then
         echo "Submitting IP to topology updater database and retrying fetching the topology."
-        topology_submit
-        topology_update
+        topology_submit && topology_update
     fi
 else
-    # Replace topology
-    mv ${NODE_PATH}/topology.json ${NODE_PATH}/topology.backup.json
-    mv -f ${NODE_PATH}/topology.auto.json ${NODE_PATH}/topology.json
+    if [[ -n "${CUSTOM_PEERS}" ]]; then
+        topo="$(cat "${TOPOLOGY_FILE}".tmp)"
+        IFS='|' read -ra cpeers <<< "${CUSTOM_PEERS}"
+        for cpeer in "${cpeers[@]}"; do
+          IFS=',' read -ra cpeer_attr <<< "${cpeer}"
+          case ${#cpeer_attr[@]} in
+            2) addr="${cpeer_attr[0]}"
+               port=${cpeer_attr[1]}
+               valency=1 ;;
+            3) addr="${cpeer_attr[0]}"
+               port=${cpeer_attr[1]}
+               valency=${cpeer_attr[2]} ;;
+            *) echo "ERROR: Invalid Custom Peer definition '${cpeer}'. Please double check CUSTOM_PEERS definition"
+               exit 1 ;;
+          esac
+          if [[ ${addr} = *.* ]]; then
+            ! isValidIPv4 "${addr}" && echo "ERROR: Invalid IPv4 address or hostname '${addr}'. Please check CUSTOM_PEERS definition" && continue
+          elif [[ ${addr} = *:* ]]; then
+            ! isValidIPv6 "${addr}" && echo "ERROR: Invalid IPv6 address '${addr}'. Please check CUSTOM_PEERS definition" && continue
+          fi
+          ! isNumber ${port} && echo "ERROR: Invalid port number '${port}'. Please check CUSTOM_PEERS definition" && continue
+          ! isNumber ${valency} && echo "ERROR: Invalid valency number '${valency}'. Please check CUSTOM_PEERS definition" && continue
+          topo=$(jq '.Producers += [{"addr": $addr, "port": $port|tonumber, "valency": $valency|tonumber}]' --arg addr "${addr}" --arg port ${port} --arg valency ${valency} <<< "${topo}")
+        done
+        echo "${topo}" | jq -r . >/dev/null 2>&1 && echo "${topo}" > "${TOPOLOGY_FILE}".tmp
+    fi
 
-    echo -e " ${CHECK_MARK} Done."
+    # Replace topology
+    mv "${TOPOLOGY_FILE}" "${TOPOLOGY_FILE}".backup
+    mv -f "${TOPOLOGY_FILE}".tmp $TOPOLOGY_FILE
+
+    echo -e "${CHECK_MARK} Done."
 
     # Restart cardano-node
     if [[ -n "$AUTO_RESTART" ]]; then
-        echo -en "\nRestarting cardano-node ..."
+        echo -en "\nRestarting cardano-node ... "
         killall -9 cardano-node
-        echo -e " ${CHECK_MARK} Done."
+        echo -e "${CHECK_MARK} Done."
     fi
 fi
