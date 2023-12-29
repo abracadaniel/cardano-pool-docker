@@ -1,14 +1,12 @@
-FROM haskell:8.6.5 as build
+FROM haskell:8.10.7 as build
 WORKDIR /build
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  build-essential=12.3 \
-  git=1:2.11.*
-RUN stack upgrade --binary-version 2.1.3
+RUN apt-get update && apt-get install --no-install-recommends -y build-essential git
+RUN stack upgrade
 
 # Install cardano-addresses
 ARG VERSION
 RUN echo "Building tags/$VERSION..." \
-    && git clone https://github.com/input-output-hk/cardano-addresses.git \
+    && git clone https://github.com/IntersectMBO/cardano-addresses \
     && cd cardano-addresses \
     && git fetch --all --recurse-submodules --tags \
     && git tag \

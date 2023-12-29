@@ -1,4 +1,4 @@
-FROM debian:buster-slim as build
+FROM debian:stable-slim as build
 
 # Install build dependencies
 RUN apt-get update -y \
@@ -7,7 +7,7 @@ RUN apt-get update -y \
     && apt-get clean
 
 # Install GHC
-ENV CABAL_VERSION=3.6.2.0 \
+ENV CABAL_VERSION=3.8.1.0 \
     GHC_VERSION=8.10.7 \
     PATH="$HOME/.cabal/bin:/root/.ghcup/bin:$PATH"
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
@@ -18,7 +18,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
 
 # Install libsodium
 ARG LIBSODIUM_VERSION
-RUN git clone https://github.com/input-output-hk/libsodium \
+RUN git clone https://github.com/IntersectMBO/libsodium \
     && cd libsodium \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
@@ -39,11 +39,37 @@ RUN git clone https://github.com/bitcoin-core/secp256k1 \
     && ./configure --enable-module-schnorrsig --enable-experimental \
     && make && make install
 
+# Install blst
+COPY <<"EOT" /usr/local/lib/pkgconfig/libblst.pc
+    prefix=/usr/local
+    exec_prefix=\${prefix}
+    libdir=\${exec_prefix}/lib
+    includedir=\${prefix}/include
+
+    Name: libblst
+    Description: Multilingual BLS12-381 signature library
+    URL: https://github.com/supranational/blst
+    Version: 0.3.10
+    Cflags: -I\${includedir}
+    Libs: -L\${libdir} -lblst
+EOT
+RUN git clone https://github.com/supranational/blst \
+    && cd blst \
+    && git checkout v0.3.10 \
+    && ./build.sh \
+    && cp bindings/blst_aux.h bindings/blst.h bindings/blst.hpp  /usr/local/include/ \
+    && cp libblst.a /usr/local/lib \
+    && chmod u=rw,go=r /usr/local/lib/libblst.a \
+    && chmod u=rw,go=r /usr/local/lib/pkgconfig/libblst.pc \
+    && chmod u=rw,go=r /usr/local/include/blst.h \
+    && chmod u=rw,go=r /usr/local/include/blst.hpp \
+    && chmod u=rw,go=r /usr/local/include/blst_aux.h
+
 # Install cardano-node
 ARG VERSION
 RUN echo "Building tags/${VERSION}..." \
     && echo tags/${VERSION} > /CARDANO_BRANCH \
-    && git clone https://github.com/input-output-hk/cardano-node.git \
+    && git clone https://github.com/IntersectMBO/cardano-node \
     && cd cardano-node \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
@@ -53,6 +79,7 @@ RUN echo "Building tags/${VERSION}..." \
     && echo "  flags: -external-libsodium-vrf" >>  cabal.project.local \ 
     && cabal update \
     && cabal build all \
+    && cabal build cardano-cli \
     && mkdir -p /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-node)" /root/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-cli)" /root/.local/bin/ \

@@ -4,16 +4,17 @@ FROM arradev/cardano-node:${NODE_VERSION} AS node
 FROM arradev/cardano-addresses:latest AS addresses
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
-FROM debian:stable-20210816-slim
+FROM debian:stable-slim
 LABEL maintainer="droe@pm.me"
 
 SHELL ["/bin/bash", "-c"]
 WORKDIR /
 
 # Install tools
-RUN apt-get update -y && apt-get install -y vim procps dnsutils bc curl nano cron python3 python3-pip tmux jq wget \
+RUN apt-get update -y \
+    && apt-get install -y libssl-dev vim procps dnsutils bc curl nano cron python3 python3-pip tmux jq wget \
     && apt-get clean
-RUN pip3 install pytz
+RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED && pip3 install pytz
 
 # Copy compiled binaries
 COPY --from=node /bin/cardano* /bin/
