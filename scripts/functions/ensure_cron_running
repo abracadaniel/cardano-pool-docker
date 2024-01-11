@@ -1,6 +1,8 @@
 #!/bin/bash
 
-function ensure_cron_running {
-  crontab /crontab
-  service cron start
-}
+if [ -z "$(pgrep cron)" ]; then
+    crontab /crontab
+    service cron start
+else
+    echo "Cron is running"
+fi
