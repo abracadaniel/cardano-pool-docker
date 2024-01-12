@@ -1,4 +1,5 @@
 config/
+.DS_Store
 /rsync.sh
 *.pyc
 __pycache__
