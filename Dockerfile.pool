@@ -4,6 +4,7 @@ FROM arradev/cardano-node:${NODE_VERSION} AS node
 FROM arradev/cardano-addresses:latest AS addresses
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli
+FROM arradev/mithril-client:latest AS mithril
 FROM debian:stable-slim
 LABEL maintainer="droe@pm.me"
 
@@ -23,6 +24,7 @@ COPY --from=node /lib/libsecp256k1* /lib/
 COPY --from=cncli /bin/cncli /bin/
 COPY --from=addresses /bin/cardano-address /bin/
 COPY --from=bech32 /bin/bech32 /bin/
+COPY --from=mithril /bin/mithril-client /bin/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus

@@ -1,0 +1,23 @@
+FROM rust:slim as build
+
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y libssl-dev make build-essential git m4 jq
+
+ARG VERSION
+RUN echo "Building tags/v$VERSION..." \
+    && git clone https://github.com/input-output-hk/mithril.git \
+    && cd mithril/mithril-client-cli \
+    && git fetch --all --tags \
+    && git tag \
+    && git checkout tags/$VERSION \
+    && make build
+
+# Run
+FROM debian:stable-slim
+
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y ca-certificates
+
+COPY --from=build /mithril/mithril-client-cli/mithril-client /bin/mithril-client
+
+ENTRYPOINT ["mithril-client"]

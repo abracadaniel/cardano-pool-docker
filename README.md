@@ -229,6 +229,7 @@ You can pass the following environment variables to the container.
 | PT_SENDTIP | Send tip to pooltool.io. Requires PT_API_KEY. Default: False |
 | PT_SENDSLOTS | Send assigned slots to pooltool.io. Requires PT_API_KEY. Default: False |
 | ENABLEP2P | Enable P2P Topology. Default: False |
+| BOOTSTRAP_DB | Bootstrap DB with latest Mithril snapshot. Default: True |
 
 
 ## Commands
