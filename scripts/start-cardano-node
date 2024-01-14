@@ -45,6 +45,7 @@ function help {
     echo "POOL_MARGIN                   Operator margin. Default: 0.05"
     echo "CNCLI_SYNC                    Run cncli sync. Default: True"
     echo "ENABLEP2P                     Enable P2P Topology. Default: False"
+    echo "BOOTSTRAP_DB                  Bootstrap DB with latest Mithril snapshot. Default: True"
 
     exit
 }
@@ -104,7 +105,6 @@ else
 fi
 
 
-
 # Init pooltool config
 POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
 echo {'"'api_key'"': '"'${PT_API_KEY}'"','"'pools'"': [{'"'name'"': '"'${POOL_TICKER}'"','"'pool_id'"':'"'${POOL_ID}'"','"'host'"':'"'127.0.0.1'"','"'port'"':${NODE_PORT}}]} > ${NODE_PATH}/pooltool.json
@@ -120,6 +120,16 @@ fi
 
 if [ -n "$CREATE" ]; then
     create_stakepool ${COLD}
+fi
+
+# Ensure we only bootstrap on the first run (db dir doesn't exist).
+if [[ $BOOTSTRAP_DB = "True" ]]; then
+    if [ ! -d $DB_PATH ]; then
+        /scripts/download_db_snapshot
+    else
+        echo "Skipping db bootstrapping. Database directory already exists."
+        echo "Delete $DB_PATH if you want a snapshot to be used."
+    fi
 fi
 
 # start node

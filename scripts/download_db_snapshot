@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source /scripts/init_node_vars
+
+mithril_config = "/cfg-templates/$CARDANO_NETWORK/mithril_config"
+$( cat "$mithril_config" | jq -r 'keys[] as $k | "export \($k)=\(.[$k])"' )
+
+echo "Bootstrapping with latest Mithril snapshot"
+echo mithril-client snapshot show --digest latest
+
+mithril-client snapshot download --download-dir=$NODE_PATH latest
