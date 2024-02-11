@@ -1,0 +1,33 @@
+FROM rust:slim as build
+
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y libssl-dev make build-essential git m4 jq
+
+ARG VERSION
+RUN echo "Building tags/v$VERSION..." \
+    && git clone https://github.com/input-output-hk/mithril.git \
+    && cd mithril/mithril-signer \
+    && git fetch --all --tags \
+    && git tag \
+    && git checkout tags/$VERSION \
+    && make build
+
+# Run
+FROM arradev/cardano-node:latest AS node
+FROM debian:stable-slim
+
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y ca-certificates jq curl
+
+ENV NODE_PATH=/config/cardano-node/ \
+    RELAY_ENDPOINT=0.0.0.0
+EXPOSE 3132
+
+COPY --from=build /mithril/mithril-signer/mithril-signer /bin/mithril-signer
+COPY --from=node /bin/cardano* /bin/
+COPY --from=node /lib/libsodium* /lib/
+COPY --from=node /lib/libsecp256k1* /lib/
+COPY scripts/mithril/* /bin/
+RUN chmod +x /bin/generate_mithril_config /bin/run_mithril /bin/verify_signer_registration.sh
+
+ENTRYPOINT ["run_mithril"]

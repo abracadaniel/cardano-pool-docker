@@ -1,0 +1,5 @@
+#!/bin/bash
+
+generate_mithril_config
+
+source /config/mithril/config.env && mithril-signer -vvv

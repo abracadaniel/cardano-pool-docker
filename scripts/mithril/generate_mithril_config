@@ -1,0 +1,25 @@
+#!/bin/bash
+
+mkdir -p /config/mithril/stores
+
+FILE=/config/mithril/config.env
+if [ -f "$FILE" ]; then
+    echo "$FILE exists."
+else
+    cat > ${FILE} << EOF
+export PARTY_ID=${POOL_ID}
+export KES_SECRET_KEY_PATH=${NODE_PATH}/staking/pool-keys/kes.skey
+export OPERATIONAL_CERTIFICATE_PATH=${NODE_PATH}/staking/pool-keys/node.cert
+export NETWORK=mainnet
+export AGGREGATOR_ENDPOINT=https://aggregator.release-mainnet.api.mithril.network/aggregator
+export RUN_INTERVAL=60000
+export DB_DIRECTORY=${NODE_PATH}/db/
+export CARDANO_NODE_SOCKET_PATH=${NODE_PATH}/node.socket
+export CARDANO_CLI_PATH=/bin/cardano-cli
+export DATA_STORES_DIRECTORY=/config/mithril/stores
+export STORE_RETENTION_LIMIT=5
+export ERA_READER_ADAPTER_TYPE=cardano-chain
+export ERA_READER_ADAPTER_PARAMS='{"address":"addr1qy72kwgm6kypyc5maw0h8mfagwag8wjnx6emgfnsnhqaml6gx7gg4tzplw9l32nsgclqax7stc4u6c5dn0ctljwscm2sqv0teg","verification_key":"5b31312c3133342c3231352c37362c3134312c3232302c3131312c3135342c36332c3233302c3131342c31322c38372c37342c39342c3137322c3133322c32372c39362c3138362c3132362c3137382c31392c3131342c33302c3234332c36342c3134312c3131302c38332c38362c31395d"}'
+export RELAY_ENDPOINT=${RELAY_ENDPOINT}
+EOF
+fi
