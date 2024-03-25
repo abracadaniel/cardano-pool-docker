@@ -1,4 +1,4 @@
-FROM haskell:9.6.3 as build
+FROM haskell:9.8.2-slim as build
 WORKDIR /build
 RUN apt-get update && apt-get install --no-install-recommends -y build-essential git
 RUN stack upgrade
@@ -12,7 +12,7 @@ RUN echo "Building tags/v$VERSION..." \
     && git tag \
     && git checkout tags/v$VERSION
 
-RUN stack setup \
+RUN stack setup --install-ghc \
   && stack init \
   && stack build \
   && stack install --flag bech32:release

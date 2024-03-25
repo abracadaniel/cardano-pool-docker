@@ -1,12 +1,12 @@
 #!/bin/bash
 
-MITHRIL_VERSION="2403.1"
-NODE_VERSION="8.7.3"
+MITHRIL_VERSION="2408.0"
+NODE_VERSION="8.9.0"
 LIBSODIUM_VERSION="dbb48cc"
 ADDRESSES_VERSION="3.12.0"
-BECH_VERSION="1.1.4"
-CNCLI_VERSION="6.0.0"
-POOL_VERSION="8.7.3"
+BECH_VERSION="1.1.5"
+CNCLI_VERSION="6.1.0"
+POOL_VERSION="8.9.0"
 
 docker build --output type=docker -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
@@ -14,8 +14,8 @@ docker build --output type=docker -f Dockerfile.node \
     --tag arradev/cardano-node:latest .
 
 docker build --output type=docker -f Dockerfile.mithril-client \
-    --build-arg VERSION=${MITHRIL_CLIENT_VERSION} \
-    --tag arradev/mithril-client:${MITHRIL_CLIENT_VERSION} \
+    --build-arg VERSION=${MITHRIL_VERSION} \
+    --tag arradev/mithril-client:${MITHRIL_VERSION} \
     --tag arradev/mithril-client:latest .
 
 docker build --output type=docker -f Dockerfile.mithril-signer \
