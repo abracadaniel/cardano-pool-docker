@@ -1,4 +1,4 @@
-FROM debian:stable-slim as build
+FROM debian:stable-slim AS build
 
 # Install build dependencies
 RUN apt-get update -y \

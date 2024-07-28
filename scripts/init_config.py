@@ -37,6 +37,7 @@ def init_args():
     parser.add_argument('--node-name', dest='name', help='Name of node. Defaults to node1.', type=slugify, default=os.environ.get('NODE_NAME', 'node1'))
     parser.add_argument('--node-topology', dest='topology', help='Topology of the node. Should be comma separated for each individual node to add, on the form: <ip>:<port>/<valency>. So for example: 127.0.0.1:3001/1,127.0.0.1:3002/1.', type=str, default=os.environ.get('NODE_TOPOLOGY', ''))
     parser.add_argument('--node-relay', dest='relay', help='Set to 1 if default IOHK relay should be added to the network topology.', type=str2bool, default=os.environ.get('NODE_RELAY', False))
+    parser.add_argument('--p2p', dest='p2p', help='Peer2Peer.', type=str2bool, default=os.environ.get('ENABLEP2P', False))
     parser.add_argument('--cardano-network', dest='network', help='Carano network to use (main, test, pioneer). Defaults to main.', type=str, default=os.environ.get('CARDANO_NETWORK', 'main'))
     parser.add_argument('--ekg-port', dest='ekg_port', help='Port of EKG monitoring. Defaults to 12788.', type=int, default=os.environ.get('EKG_PORT', 12788))
     parser.add_argument('--prometheus-host', dest='prometheus_host', help='Host of Prometheus monitoring. Defaults to 127.0.0.1.', type=str, default=os.environ.get('PROMETHEUS_HOST', '127.0.0.1'))
@@ -53,7 +54,10 @@ def init_args():
     args.SHELLEY_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'shelley-genesis.json')
     args.ALONZO_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'alonzo-genesis.json')
     args.CONWAY_GENESIS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'conway-genesis.json')
-    args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology.json')
+    if args.p2p and args.relay:
+        args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology-p2p.json')
+    else:
+        args.TOPOLOGY_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'topology.json')
     args.CONFIG_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'config.json')
     args.VARS_PATH = os.path.join(args.CONFIG_OUTPUT_PATH, 'VARS')
 
@@ -101,10 +105,11 @@ def resolve_hostname(hostname, tries=0):
         else:
             return hostname
 
-def parse_topology_str(s) -> list:
+def parse_topology_str(args) -> list:
     """Parses node-topology string and returns list of dicts"""
     topology = []
 
+    s = args.topology
     if s:
         for a in s.split(','):
             (ip_port, valency) = a.split('/')
@@ -112,11 +117,22 @@ def parse_topology_str(s) -> list:
 
             #if resolve_hostname: ip = resolve_hostname(ip)
 
-            topology.append({
-                'addr': str(ip),
-                'port': int(port),
-                'valency': int(valency)
-            })
+            if args.p2p:
+                topology.append({
+                    "accessPoints": [{
+                        'address': str(ip),
+                        'port': int(port)
+                    }],
+                    "advertise": False,
+                    "trustable": True,
+                    "valency": int(valency)
+                })
+            else:
+                topology.append({
+                    'addr': str(ip),
+                    'port': int(port),
+                    'valency': int(valency)
+                })
 
     return topology
 
@@ -125,7 +141,11 @@ def init_topology(args):
     """Initializes the topology file"""
 
     if args.relay:
-        INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology-relay.json')
+        if args.p2p:
+            INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology-relay-p2p.json')
+        else:
+            INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology-relay.json')
+
     else:
         INPUT_PATH = os.path.join(args.CONFIG_TEMPLATES_PATH, 'topology.json')
 
@@ -137,11 +157,15 @@ def init_topology(args):
         data = load_json(INPUT_PATH)
 
         # Parse topology string
-        topology = parse_topology_str(args.topology)
+        topology = parse_topology_str(args)
 
         # Add default IOHK relay
 
-        data['Producers'] = data['Producers']+topology
+        if args.p2p and args.relay:
+            data['localRoots'] = topology
+        else:
+            data['Producers'] = data['Producers']+topology
+
         save_json(args.TOPOLOGY_PATH, data)
 
 def init_config(args):

@@ -1,4 +1,4 @@
-FROM rust:slim as build
+FROM rust:slim AS build
 
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y libssl-dev make build-essential git m4 jq

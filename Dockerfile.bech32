@@ -1,4 +1,4 @@
-FROM haskell:9.8.2-slim as build
+FROM haskell:9.8.2-slim AS build
 WORKDIR /build
 RUN apt-get update && apt-get install --no-install-recommends -y build-essential git
 RUN stack upgrade

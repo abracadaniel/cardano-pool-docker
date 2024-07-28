@@ -97,11 +97,15 @@ if [[ ! -f "${NODE_PATH}/VARS" || "$REPLACE_EXISTING_CONFIG" == "True" ]]; then
 fi
 
 if [[ $ENABLEP2P = "True" ]]; then
-    mv ${NODE_PATH}/config.json /tmp/config.json
+    mv -f ${NODE_PATH}/config.json /tmp/config.json
     cat /tmp/config.json | jq .EnableP2P=true > ${NODE_PATH}/config.json
+    mv -f ${NODE_PATH}/config.json /tmp/config.json
+    cat /tmp/config.json | jq .PeerSharing=true > ${NODE_PATH}/config.json
 else
-    mv ${NODE_PATH}/config.json /tmp/config.json
+    mv -f ${NODE_PATH}/config.json /tmp/config.json
     cat /tmp/config.json | jq .EnableP2P=false > ${NODE_PATH}/config.json
+    mv -f ${NODE_PATH}/config.json /tmp/config.json
+    cat /tmp/config.json | jq .PeerSharing=false > ${NODE_PATH}/config.json
 fi
 
 
