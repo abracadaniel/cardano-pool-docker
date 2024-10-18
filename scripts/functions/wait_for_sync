@@ -12,7 +12,8 @@ function wait_for_sync {
         SYNC_PCT=$(sync_status | tr ' ' '\n' | tail -1 | sed 's/%//g' | bc)
         echo -en "\\r== $(sync_status) "
 
-        if [[ (($SYNC_PCT > $WAIT_FOR_SYNC)) ]]; then
+	    RESULT=$(echo "${SYNC_PCT}>${WAIT_FOR_SYNC}" | bc)
+        if [[ $RESULT = 1 ]]; then
             echo -e "${CHECK_MARK} Done."
             break
         fi
