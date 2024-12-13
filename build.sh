@@ -1,12 +1,12 @@
 #!/bin/bash
 
 MITHRIL_VERSION="2442.0"
-NODE_VERSION="10.1.1"
+NODE_VERSION="10.1.3"
 LIBSODIUM_VERSION="dbb48cc"
 ADDRESSES_VERSION="3.12.0"
 BECH_VERSION="1.1.7"
 CNCLI_VERSION="6.5.0"
-POOL_VERSION="10.1.1"
+POOL_VERSION="10.1.3"
 
 docker build --output type=docker -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
