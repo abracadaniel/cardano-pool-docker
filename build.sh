@@ -6,7 +6,7 @@ LIBSODIUM_VERSION="dbb48cc"
 ADDRESSES_VERSION="3.12.0"
 BECH_VERSION="1.1.7"
 CNCLI_VERSION="6.5.0"
-POOL_VERSION="10.1.3"
+POOL_VERSION="10.1.4"
 
 docker build --output type=docker -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
