@@ -54,7 +54,7 @@ do
 done
 
 # 1. Create a JSON file with your pool's metadata
-if [ ! -f "metadata.json" ] || [ -n "$UPDATE_CERT" ]; then
+if [ ! -f "metadata.json" ]; then
     if [ -z "$COLD_CREATE" ]; then
         echo "Getting metadata file from ${METADATA_URL}"
         wget -O metadata.json ${METADATA_URL}
@@ -65,7 +65,7 @@ fi
 
 # 2. get hash of file
 echo "Getting hash of metadata.json"
-METADATA_HASH=$(cardano-cli stake-pool metadata-hash --pool-metadata-file metadata.json)
+METADATA_HASH=$(cardano-cli latest stake-pool metadata-hash --pool-metadata-file metadata.json)
 echo "metadata.json hash: ${METADATA_HASH}"
 
 # 3. Generate Stake pool registration certificate
@@ -100,7 +100,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
     else
         if [ "${PUBLIC_RELAY_IP}" == "TOPOLOGY" ]; then
             relay_ip=$(jq -r ".Producers[0].addr" ${NODE_PATH}/topology.json)
-            port=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
+            relay_port=$(jq -r ".Producers[0].port" ${NODE_PATH}/topology.json)
         fi
         if [ "${PUBLIC_RELAY_IP}" == "PUBLIC" ]; then
             relay_ip=$(get_public_ip)
@@ -125,7 +125,7 @@ if [ ! -f "pool.cert" ] || [ -n "$UPDATE_CERT" ]; then
         echo ""
     fi
 
-    cardano-cli stake-pool registration-certificate \
+    cardano-cli latest stake-pool registration-certificate \
         --cold-verification-key-file cold-keys/cold.vkey \
         --vrf-verification-key-file pool-keys/vrf.vkey \
         --pool-pledge ${POOL_PLEDGE} \
@@ -160,7 +160,7 @@ fi
 
 # 2. Generate delegation certificate (pledge)
 if [ ! -f "wallets/owner/delegation.cert" ]; then
-    cardano-cli stake-address delegation-certificate \
+    cardano-cli latest  stake-address delegation-certificate \
         --stake-verification-key-file wallets/owner/stake.vkey \
         --cold-verification-key-file cold-keys/cold.vkey \
         --out-file wallets/owner/delegation.cert \
@@ -176,7 +176,7 @@ if [ -n "$MULTI_OWNERS" ]; then
     do
         echo "- $i"
         if [ ! -f "wallets/$i/delegation.cert" ]; then
-            cardano-cli stake-address delegation-certificate \
+            cardano-cli latest  stake-address delegation-certificate \
                 --stake-verification-key-file wallets/$i/stake.vkey \
                 --cold-verification-key-file cold-keys/cold.vkey \
                 --out-file wallets/$i/delegation.cert \
