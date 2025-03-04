@@ -6,6 +6,6 @@ MITHRIL_CONFIG="/cfg-templates/$CARDANO_NETWORK/mithril_config.json"
 $( cat "$MITHRIL_CONFIG" | jq -r 'keys[] as $k | "export \($k)=\(.[$k])"' )
 
 echo "Bootstrapping with latest Mithril snapshot"
-echo `mithril-client snapshot show latest`
 
-mithril-client snapshot download --download-dir=$NODE_PATH latest
+mithril-client cardano-db snapshot show latest --json | python3 -m json.tool
+mithril-client cardano-db download --download-dir=$NODE_PATH latest
