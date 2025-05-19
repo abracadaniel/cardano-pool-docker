@@ -1,7 +1,7 @@
 FROM rust:slim AS build
 
 RUN apt-get update -y \
-    && apt-get install --no-install-recommends -y libssl-dev make build-essential git m4 jq
+    && apt-get install --no-install-recommends -y libssl-dev make build-essential git m4 jq pkg-config
 
 ARG VERSION
 RUN echo "Building tags/v$VERSION..." \

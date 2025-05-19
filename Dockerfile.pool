@@ -1,6 +1,4 @@
-ARG NODE_VERSION
-
-FROM arradev/cardano-node:${NODE_VERSION} AS node
+FROM arradev/cardano-node:latest AS node
 FROM arradev/cardano-addresses:latest AS addresses
 FROM arradev/bech32:latest AS bech32
 FROM arradev/cncli:latest AS cncli

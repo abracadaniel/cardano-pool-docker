@@ -1,4 +1,4 @@
-FROM haskell:8.10.7 AS build
+FROM haskell:9.8.4 AS build
 WORKDIR /build
 RUN apt-get update && apt-get install --no-install-recommends -y build-essential git
 RUN stack upgrade
@@ -11,14 +11,16 @@ RUN echo "Building tags/$VERSION..." \
     && git fetch --all --recurse-submodules --tags \
     && git tag \
     && git checkout tags/$VERSION \
-    && stack setup \
-    && stack build --only-snapshot \
-    && stack build --only-dependencies \
-    && stack install --flag cardano-addresses:release
+    && cabal update \
+    && cabal build all \
+    && cabal build cardano-addresses
+RUN cd cardano-addresses \
+    && cabal install cardano-addresses \
+    && cp -L /root/.local/bin/cardano-address /tmp/cardano-address
 
 # Run
 FROM debian:stable-slim
-COPY --from=build /root/.local/bin /bin
+COPY --from=build /tmp/cardano-address /bin/cardano-address
 RUN mkdir /etc/bash_completion.d
 RUN cardano-address --bash-completion-script `which cardano-address` > /etc/bash_completion.d/cardano-address
 RUN echo "source /etc/bash_completion.d/cardano-address" >> ~/.bashrc
