@@ -22,6 +22,7 @@ RUN rustup install stable \
 
 # Install cncli
 ARG VERSION
+ARG DOCKER_USER="arradev"
 RUN echo "Building tags/v$VERSION..." \
     && git clone --recurse-submodules https://github.com/cardano-community/cncli \
     && cd cncli \
@@ -32,7 +33,7 @@ RUN echo "Building tags/v$VERSION..." \
     && cncli --version
 
 # Run
-FROM arradev/cardano-node:latest AS node
+FROM ${DOCKER_USER}/cardano-node:latest AS node
 
 FROM debian:stable-slim
 SHELL ["/bin/bash", "-c"]
