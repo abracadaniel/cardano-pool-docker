@@ -1,7 +1,6 @@
-FROM haskell:9.8.2-slim AS build
+FROM haskell:9.12.2-slim-bookworm AS build
 WORKDIR /build
 RUN apt-get update && apt-get install --no-install-recommends -y build-essential git
-RUN stack upgrade
 
 # Install bech32
 ARG VERSION
@@ -12,7 +11,7 @@ RUN echo "Building tags/v$VERSION..." \
     && git tag \
     && git checkout tags/v$VERSION
 
-RUN stack setup --install-ghc \
+RUN stack setup 9.8.4 --install-ghc \
   && stack init \
   && stack build \
   && stack install --flag bech32:release
