@@ -11,6 +11,7 @@ DOCKER_USER="${DOCKER_USER:-arradev}"
 
 docker build -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
+    --build-arg DOCKER_USER=${DOCKER_USER} \
     --tag ${DOCKER_USER}/cardano-node:${NODE_VERSION} \
     --tag ${DOCKER_USER}/cardano-node:latest .
 
