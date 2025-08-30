@@ -1,16 +1,17 @@
 #!/bin/bash
 
 MITHRIL_VERSION="2517.1"
-NODE_VERSION="10.4.1"
+NODE_VERSION="10.5.1"
 LIBSODIUM_VERSION="dbb48cc"
 ADDRESSES_VERSION="4.0.0"
 BECH_VERSION="1.1.7"
 CNCLI_VERSION="6.5.1"
-POOL_VERSION="10.4.1-2"
+POOL_VERSION="10.5.1-0"
 DOCKER_USER="${DOCKER_USER:-arradev}"
 
 docker build -f Dockerfile.node \
     --build-arg VERSION=${NODE_VERSION} \
+    --build-arg DOCKER_USER=${DOCKER_USER} \
     --tag ${DOCKER_USER}/cardano-node:${NODE_VERSION} \
     --tag ${DOCKER_USER}/cardano-node:latest .
 

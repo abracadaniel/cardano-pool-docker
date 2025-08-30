@@ -1,3 +1,5 @@
+ARG DOCKER_USER="arradev"
+
 FROM debian:stable-slim AS build
 
 # Install build dependencies
@@ -22,7 +24,6 @@ RUN rustup install stable \
 
 # Install cncli
 ARG VERSION
-ARG DOCKER_USER="arradev"
 RUN echo "Building tags/v$VERSION..." \
     && git clone --recurse-submodules https://github.com/cardano-community/cncli \
     && cd cncli \
