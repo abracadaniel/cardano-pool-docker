@@ -1,8 +1,9 @@
-FROM arradev/cardano-node:latest AS node
-FROM arradev/cardano-addresses:latest AS addresses
-FROM arradev/bech32:latest AS bech32
-FROM arradev/cncli:latest AS cncli
-FROM arradev/mithril-client:latest AS mithril-client
+ARG DOCKER_USER="arradev"
+FROM ${DOCKER_USER}/cardano-node:latest AS node
+FROM ${DOCKER_USER}/cardano-addresses:latest AS addresses
+FROM ${DOCKER_USER}/bech32:latest AS bech32
+FROM ${DOCKER_USER}/cncli:latest AS cncli
+FROM ${DOCKER_USER}/mithril-client:latest AS mithril-client
 FROM debian:stable-slim
 LABEL maintainer="droe@pm.me"
 
@@ -13,7 +14,7 @@ WORKDIR /
 RUN apt-get update -y \
     && apt-get install -y libssl-dev vim procps dnsutils bc curl nano cron python3 python3-pip tmux jq wget lsof iproute2 \
     && apt-get clean
-RUN rm /usr/lib/python3.11/EXTERNALLY-MANAGED && pip3 install pytz
+RUN rm /usr/lib/python3.*/EXTERNALLY-MANAGED && pip3 install pytz
 
 # Copy compiled binaries
 COPY --from=node /bin/cardano* /bin/

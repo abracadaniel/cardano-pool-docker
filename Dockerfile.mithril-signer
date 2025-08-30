@@ -13,7 +13,8 @@ RUN echo "Building tags/v$VERSION..." \
     && make build
 
 # Run
-FROM arradev/cardano-node:latest AS node
+ARG DOCKER_USER="arradev"
+FROM ${DOCKER_USER}/cardano-node:latest AS node
 FROM debian:stable-slim
 
 RUN apt-get update -y \
