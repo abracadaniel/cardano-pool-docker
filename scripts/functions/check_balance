@@ -10,25 +10,38 @@ function check_balance {
             echo ""
 
             TOTAL_LOVELACE=0
-            cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}
+            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS})
+            UTXO_LINES=$(
+                echo "${UTXOS}" | jq -r '
+                    to_entries[]
+                    | select(.value.value.lovelace != null)
+                    | "\(.key) \(.value.value.lovelace)"
+                '
+            )
 
-            UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS} | tail -n +3)
             echo "UTXO#TXIX: LOVELACE"
-            while IFS= read -r line ; do
-                arr=(${line})
-                LOVELACE=${arr[2]}
+            while read -r utxo lovelace; do
+                echo "${utxo} : ${lovelace}"
+
+                TXHASH="${utxo%%#*}"
+                TXIX="${utxo##*#}"
+                LOVELACE="${lovelace}"
+
                 TOTAL_LOVELACE=$(expr ${TOTAL_LOVELACE} + ${LOVELACE})
 
                 if [ -n "${LOVELACE}" ]; then
-                    echo "${arr[0]}#${arr[1]}: ${arr[2]}"
                     REMAINING=$(expr ${LOVELACE} - ${PRICE})
-                    if [ "$LOVELACE" -ge "$PRICE" ] && [ "$LOVELACE_FOR_UTXO_TXIX" -ge "$LOVELACE" ] && [ "$REMAINING" -ge "$MINIMAL_LOVELACE_REMAINING_ON_UTXO" ]; then
-                        UTXO=${arr[0]}
-                        TXIX=${arr[1]}
-                        LOVELACE_FOR_UTXO_TXIX=$LOVELACE
+
+                    if [ "$LOVELACE" -ge "$PRICE" ] \
+                    && [ "$LOVELACE_FOR_UTXO_TXIX" -ge "$LOVELACE" ] \
+                    && [ "$REMAINING" -ge "$MINIMAL_LOVELACE_REMAINING_ON_UTXO" ]; then
+
+                        UTXO="${TXHASH}"
+                        TXIX="${TXIX}"
+                        LOVELACE_FOR_UTXO_TXIX="${LOVELACE}"
                     fi
                 fi
-            done <<< "${UTXOS}"
+            done <<< "${UTXO_LINES}"
 
             if [ -n "${UTXO}" ]; then
                 LOVELACE=$LOVELACE_FOR_UTXO_TXIX
