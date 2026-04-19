@@ -77,16 +77,16 @@ EOF
 
 echo
 echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
-cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
-cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
+cardano-cli latest key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
+cardano-cli latest key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
 
-cardano-cli shelley key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
-cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
+cardano-cli latest key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
+cardano-cli latest key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
 
-cardano-cli shelley stake-address build --stake-verification-key-file   stake.vkey ${NETWORK_ARGUMENT} > stake.addr
-cardano-cli shelley address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
+cardano-cli latest stake-address build --stake-verification-key-file   stake.vkey ${NETWORK_ARGUMENT} > stake.addr
+cardano-cli latest address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
 
-cardano-cli shelley address build \
+cardano-cli latest address build \
     --payment-verification-key-file payment.vkey \
     --stake-verification-key-file   stake.vkey \
     ${NETWORK_ARGUMENT} > payment.addr

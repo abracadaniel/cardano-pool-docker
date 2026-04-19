@@ -160,7 +160,7 @@ fi
 
 # 2. Generate delegation certificate (pledge)
 if [ ! -f "wallets/owner/delegation.cert" ]; then
-    cardano-cli latest  stake-address delegation-certificate \
+    cardano-cli latest stake-address stake-delegation-certificate \
         --stake-verification-key-file wallets/owner/stake.vkey \
         --cold-verification-key-file cold-keys/cold.vkey \
         --out-file wallets/owner/delegation.cert \
@@ -176,7 +176,7 @@ if [ -n "$MULTI_OWNERS" ]; then
     do
         echo "- $i"
         if [ ! -f "wallets/$i/delegation.cert" ]; then
-            cardano-cli latest  stake-address delegation-certificate \
+            cardano-cli latest stake-address stake-delegation-certificate \
                 --stake-verification-key-file wallets/$i/stake.vkey \
                 --cold-verification-key-file cold-keys/cold.vkey \
                 --out-file wallets/$i/delegation.cert \

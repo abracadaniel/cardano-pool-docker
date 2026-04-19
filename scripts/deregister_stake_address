@@ -61,7 +61,7 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
 fi
 
 # Generate protocol
-cardano-cli query protocol-parameters \
+cardano-cli latest query protocol-parameters \
     ${NETWORK_ARGUMENT} \
     --out-file ${NODE_PATH}/staking/protocol.json
 
@@ -73,12 +73,12 @@ ADDRESS=$(cat payment.addr)
 check_balance ${KEY_DEPOSIT}
 
 # Generate deregistration cert
-cardano-cli stake-address deregistration-certificate \
-    --staking-verification-key-file stake.vkey \
+cardano-cli latest stake-address deregistration-certificate \
+    --stake-verification-key-file stake.vkey \
     --out-file destake.cert
 
 # Draft transaction
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
     --tx-out ${ADDRESS}+0 \
     --ttl 0 \
@@ -87,7 +87,7 @@ cardano-cli transaction build-raw \
     --certificate-file destake.cert
 
 # Calculate fees
-FEE=$(cardano-cli transaction calculate-min-fee \
+FEE=$(cardano-cli latest transaction calculate-min-fee \
     --tx-body-file transactions/deregister_stake_address.draft \
     --tx-in-count 1 \
     --tx-out-count 1 \
@@ -118,7 +118,7 @@ echo "TTL: ${TTL}"
 #
 # Create the transaction
 #
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
     --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
     --ttl ${TTL} \
@@ -127,7 +127,7 @@ cardano-cli transaction build-raw \
     --certificate-file destake.cert
 
 # Sign the transaction
-cardano-cli transaction sign \
+cardano-cli latest transaction sign \
     --tx-body-file transactions/deregister_stake_address.raw \
     --signing-key-file payment.skey \
     --signing-key-file stake.skey \
@@ -138,7 +138,7 @@ cardano-cli transaction sign \
 # Submit the transaction
 read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 
-OUT=$(cardano-cli transaction submit \
+OUT=$(cardano-cli latest transaction submit \
     --tx-file transactions/deregister_stake_address.signed \
     ${NETWORK_ARGUMENT} 2>&1)
 
