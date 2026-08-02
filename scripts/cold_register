@@ -32,7 +32,7 @@ function submit_stake_addr {
 
     if [[ $OUT =~ "Error" ]]
     then
-        echo "An error occoured."
+        echo "An error occurred."
         echo ${OUT}
         read
         exit
@@ -92,7 +92,7 @@ OUT=$(cardano-cli latest transaction submit \
 
 if [[ $OUT =~ "Error" ]]
 then
-    echo "An error occoured."
+    echo "An error occurred."
     echo ${OUT}
     read
     exit

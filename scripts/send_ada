@@ -127,7 +127,7 @@ OUT=$(cardano-cli latest transaction submit \
 
 if [[ $OUT =~ "Error" ]]
 then
-    echo "An error occoured."
+    echo "An error occurred."
     echo ${OUT}
     read
 else
