@@ -77,19 +77,9 @@ if [ -z "$COLD_CREATE" ]; then
     fi
 fi
 
-# Create an address registration certificate
-if [ ! -f "stake.cert" ]; then
-    cardano-cli stake-address registration-certificate \
-        --staking-verification-key-file stake.vkey \
-        --out-file stake.cert
-    echo "Created stake.cert"
-else
-    echo "stake.cert certificate already exists."
-fi
-
 # Generate protocol
 if [ -z "$COLD_CREATE" ]; then
-    cardano-cli query protocol-parameters \
+    cardano-cli latest query protocol-parameters \
         ${NETWORK_ARGUMENT} \
         --out-file ${NODE_PATH}/staking/protocol.json
 else
@@ -101,41 +91,52 @@ fi
 # Get key-deposit
 KEY_DEPOSIT=$(jq -r .stakeAddressDeposit ${NODE_PATH}/staking/protocol.json)
 
-# Find UTXO in address with enough lovelace to do the transaction
+# Create an address registration certificate
+if [ ! -f "stake.cert" ]; then
+    cardano-cli latest stake-address registration-certificate \
+        --stake-verification-key-file stake.vkey \
+        --out-file stake.cert \
+        --key-reg-deposit-amt ${KEY_DEPOSIT}
+    echo "Created stake.cert"
+else
+    echo "stake.cert certificate already exists."
+fi
+
 ADDRESS=$(cat payment.addr)
-check_balance ${KEY_DEPOSIT}
+
+# Find UTXO in address with enough lovelace to do the transaction
+if [ -z "$COLD_CREATE" ]; then
+    check_balance $(expr ${KEY_DEPOSIT} + 1000000)
+    SLOT=$(get_slot)
+else
+    read -p "Enter the current tip slot: " SLOT
+fi
 
 # Draft transaction
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${ADDRESS}+0 \
-    --ttl 0 \
+    --tx-out ${ADDRESS}+$(expr ${LOVELACE} - ${KEY_DEPOSIT}) \
+    --ttl ${SLOT} \
     --fee 0 \
     --out-file transactions/register_stake_address.draft \
     --certificate-file stake.cert
 
 # Calculate fees
-FEE=$(cardano-cli transaction calculate-min-fee \
-    --tx-body-file transactions/register_stake_address.draft \
-    --tx-in-count 1 \
-    --tx-out-count 1 \
-    --witness-count 1 \
-    --byron-witness-count 0 \
-    ${NETWORK_ARGUMENT} \
-    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
+FEE=$(
+    cardano-cli latest transaction calculate-min-fee \
+        --tx-body-file transactions/register_stake_address.draft \
+        --tx-in-count 1 \
+        --tx-out-count 1 \
+        --witness-count 2 \
+        --byron-witness-count 0 \
+        ${NETWORK_ARGUMENT} \
+        --protocol-params-file ${NODE_PATH}/staking/protocol.json \
+    | jq -r '.fee')
 
 TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
 echo "Fee is: ${FEE} Lovelace"
 echo "Key-Deposit: ${KEY_DEPOSIT} Lovelace"
 echo "Total Price is: ${TOTAL_PRICE}"
-
-# Find UTXO in address with enough lovelace to do the transaction
-if [ -z "$COLD_CREATE" ]; then
-    check_balance ${TOTAL_PRICE}
-    SLOT=$(get_slot)
-else
-    read -p "Enter the current tip slot: " SLOT
-fi
 
 # Get slot and TTL
 TTL=$(expr ${SLOT} + 500)
@@ -150,7 +151,7 @@ echo "TTL: ${TTL}"
 #
 # Create the transaction
 #
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
     --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
     --ttl ${TTL} \
@@ -159,7 +160,7 @@ cardano-cli transaction build-raw \
     --certificate-file stake.cert
 
 # Sign the transaction
-cardano-cli transaction sign \
+cardano-cli latest transaction sign \
     --tx-body-file transactions/register_stake_address.raw \
     --signing-key-file payment.skey \
     --signing-key-file stake.skey \
@@ -171,7 +172,7 @@ cardano-cli transaction sign \
 if [ -z "$COLD_CREATE" ]; then
     read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 
-    OUT=$(cardano-cli transaction submit \
+    OUT=$(cardano-cli latest transaction submit \
         --tx-file transactions/register_stake_address.signed \
         ${NETWORK_ARGUMENT} 2>&1)
 

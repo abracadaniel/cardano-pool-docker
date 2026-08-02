@@ -16,7 +16,7 @@ cd ${NODE_PATH}/staking/
 echo ""
 echo "Generate operational certificates"
 
-if [ -d "pool-keys/" ]; then
+if [ -f "pool-keys/KESPERIOD" ]; then
     source pool-keys/KESPERIOD
     BACKUPNAME=pool-keys.$(date +%s).tar.gz
     echo "pool-keys already exist."
@@ -38,13 +38,13 @@ if [ ! -f "cold-keys/cold.skey" ]; then
     echo "Creating cold keys."
     echo "Warning: The cold keys should NOT be kept on your server. You should backup your cold keys and delete them from the server."
     echo "Alternatively you can generate the keys on a seperate offline node, and move all the neccessary certificates and keys to the active staking node."
-    
-    cardano-cli node key-gen \
+
+    cardano-cli latest node key-gen \
         --cold-verification-key-file cold-keys/cold.vkey \
         --cold-signing-key-file cold-keys/cold.skey \
         --operational-certificate-issue-counter-file cold-keys/cold.counter
 
-    cardano-cli stake-pool id --cold-verification-key-file cold-keys/cold.vkey --output-format hex > ${NODE_PATH}/staking/POOL_ID
+    cardano-cli latest stake-pool id --cold-verification-key-file cold-keys/cold.vkey --output-format hex > ${NODE_PATH}/staking/POOL_ID
 else
     echo "Cold keys already exists."
 fi
@@ -52,7 +52,7 @@ fi
 # Create Verifiable Random Function key
 if [ ! -f "pool-keys/vrf.vkey" ]; then
     echo "Generating VRF key"
-    cardano-cli node key-gen-VRF \
+    cardano-cli latest node key-gen-VRF \
         --verification-key-file pool-keys/vrf.vkey \
         --signing-key-file pool-keys/vrf.skey
 fi
@@ -60,7 +60,7 @@ fi
 # Create Key Evolving Signature key
 if [ ! -f "pool-keys/kes.vkey" ]; then
     echo "Generating KES key"
-    cardano-cli node key-gen-KES \
+    cardano-cli latest node key-gen-KES \
         --verification-key-file pool-keys/kes.vkey \
         --signing-key-file pool-keys/kes.skey
 fi
@@ -101,7 +101,7 @@ echo "MaxKESSlots: ${MAXKESSLOTS}"
 echo "KESExpireSlot: ${EXPIRESLOT}"
 
 # Create an operational node certificate
-cardano-cli node issue-op-cert \
+cardano-cli latest node issue-op-cert \
     --kes-verification-key-file pool-keys/kes.vkey \
     --cold-signing-key-file cold-keys/cold.skey \
     --operational-certificate-issue-counter cold-keys/cold.counter \

@@ -11,6 +11,7 @@ source /scripts/functions/wait_for_slot
 source /scripts/functions/wait_for_sync
 source /scripts/init_node_vars
 TIMESTAMP=$(date +%s)
+PROTOCOL_PARAMS_FILE=${NODE_PATH}/staking/protocol.json
 
 # Enter staking directory
 cd ${NODE_PATH}/staking/
@@ -70,8 +71,6 @@ case $i in
 esac
 done
 
-EXTRA_FEE=15000
-
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
     wait_for_sync 99.90
@@ -79,34 +78,45 @@ fi
 
 # Generate protocol
 if [ -z "$COLD_CREATE" ]; then
-    cardano-cli query protocol-parameters \
+    cardano-cli latest query protocol-parameters \
         ${NETWORK_ARGUMENT} \
-        --out-file ${NODE_PATH}/staking/protocol.json
+        --out-file ${PROTOCOL_PARAMS_FILE}
 else
-    if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
-        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/protocol.json. You must transfer this file from an online node. Press ENTER when you have placed the file and is ready to continue."
+    if [ ! -f "${PROTOCOL_PARAMS_FILE}" ]; then
+        read -n 1 -r -s -p "Missing ${PROTOCOL_PARAMS_FILE}. You must transfer this file from an online node. Press ENTER when you have placed the file and are ready to continue."
     fi
 fi
 
 # Get pool-deposit
 if [ -z "$UPDATE" ]; then
-    POOL_DEPOSIT=$(jq -r .stakePoolDeposit protocol.json)
+    POOL_DEPOSIT=$(jq -r .stakePoolDeposit ${PROTOCOL_PARAMS_FILE})
 else
     POOL_DEPOSIT=0
 fi
 
-# Find UTXO in address with enough lovelace to do the transaction
+
 ADDRESS=$(cat wallets/owner/payment.addr)
-check_balance $(expr ${POOL_DEPOSIT} + ${EXTRA_FEE})
+
+# Find UTXO in address with enough lovelace to do the transaction
+if [ -z "$COLD_CREATE" ]; then
+    check_balance $(expr ${POOL_DEPOSIT})
+    SLOT=$(get_slot)
+else
+    read -p "Enter the current tip slot: " SLOT
+fi
+
+TTL=$(expr ${SLOT} + 500)
 
 # Multiowners delegation certificates
 if [ -n "$MULTI_OWNERS" ]; then
     echo "Multiple owner delegation certificates"
+    MULTIOWNER_COUNT=0
     for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
     do
         echo "$i"
         MULTIOWNERS_CERT_STRING="${MULTIOWNERS_CERT_STRING} --certificate-file wallets/$i/delegation.cert"
         MULTIOWNERS_SIGN="${MULTIOWNERS_SIGN} --signing-key-file wallets/$i/stake.skey"
+        MULTIOWNER_COUNT=$(expr ${MULTIOWNER_COUNT} + 1)
     done
     echo $MULTIOWNERS_CERT_STRING
     echo $MULTIOWNERS_SIGN
@@ -116,40 +126,36 @@ if [ -z "$NO_DELEG" ]; then
     DELEG_CERTS="--certificate-file wallets/owner/delegation.cert ${MULTIOWNERS_CERT_STRING}"
 fi
 
+WITNESS_COUNT=$(expr 3 + ${MULTIOWNER_COUNT:-0})
+
 # Draft transaction
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${ADDRESS}+0 \
-    --ttl 0 \
+    --tx-out ${ADDRESS}+$(expr ${LOVELACE} - ${POOL_DEPOSIT}) \
+    --ttl ${TTL} \
     --fee 0 \
     --out-file wallets/owner/transactions/register_stake_pool.draft \
     --certificate-file pool.cert ${DELEG_CERTS}
 
 
 ## Calculate the fee
-FEE=$(cardano-cli transaction calculate-min-fee \
-    --tx-body-file wallets/owner/transactions/register_stake_pool.draft \
-    --tx-in-count 1 \
-    --tx-out-count 1 \
-    ${NETWORK_ARGUMENT} \
-    --witness-count 1 \
-    --byron-witness-count 0 \
-    --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
-FEE=$(expr ${FEE} + ${EXTRA_FEE}) # FEE IS TOO SMALL?
+FEE=$(
+    cardano-cli latest transaction calculate-min-fee \
+        --tx-body-file wallets/owner/transactions/register_stake_pool.draft \
+        --tx-in-count 1 \
+        --tx-out-count 1 \
+        --witness-count ${WITNESS_COUNT} \
+        --byron-witness-count 0 \
+        ${NETWORK_ARGUMENT} \
+        --protocol-params-file ${PROTOCOL_PARAMS_FILE} \
+    | jq -r '.fee')
+
 TOTAL_PRICE=$(expr ${FEE} + ${POOL_DEPOSIT})
 
 echo "Fee is: ${FEE} Lovelace"
 echo "Pool-Deposit: ${POOL_DEPOSIT} Lovelace"
 echo "Total Price is: ${TOTAL_PRICE} Lovelace"
 
-# Find UTXO in address with enough lovelace to do the transaction
-if [ -z "$COLD_CREATE" ]; then
-    check_balance ${TOTAL_PRICE}
-    SLOT=$(get_slot)
-else
-    read -p "Enter the current tip slot: " SLOT
-fi
-TTL=$(expr ${SLOT} + 500)
 
 # Display transaction info
 REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
@@ -162,7 +168,7 @@ echo "TTL: ${TTL}"
 # Create the transaction
 #
 echo "Create transaction"
-cardano-cli transaction build-raw \
+cardano-cli latest transaction build-raw \
     --tx-in "${UTXO}#${TXIX}" \
     --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
     --ttl ${TTL} \
@@ -172,7 +178,7 @@ cardano-cli transaction build-raw \
 
 # Sign the transaction
 echo "Sign transaction"
-cardano-cli transaction sign \
+cardano-cli latest transaction sign \
     --tx-body-file wallets/owner/transactions/register_stake_pool.raw \
     --signing-key-file wallets/owner/payment.skey \
     --signing-key-file wallets/owner/stake.skey \
@@ -187,7 +193,7 @@ if [ -z "$COLD_CREATE" ]; then
     read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
 
     echo "Submit transaction"
-    OUT=$(cardano-cli transaction submit \
+    OUT=$(cardano-cli latest transaction submit \
         --tx-file wallets/owner/transactions/register_stake_pool.signed \
         ${NETWORK_ARGUMENT} 2>&1)
 

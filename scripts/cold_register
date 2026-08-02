@@ -26,7 +26,7 @@ function submit_stake_addr {
         return
     fi
 
-    OUT=$(cardano-cli shelley transaction submit \
+    OUT=$(cardano-cli latest transaction submit \
         --tx-file transactions/register_stake_address.signed \
         ${NETWORK_ARGUMENT} 2>&1)
 
@@ -86,7 +86,7 @@ fi
 read -n 1 -r -s -p $'Press enter to submit the stake pool registration transaction...\n'
 
 echo "Submitting transaction"
-OUT=$(cardano-cli shelley transaction submit \
+OUT=$(cardano-cli latest transaction submit \
     --tx-file cold-registration/register_stake_pool.signed \
     ${NETWORK_ARGUMENT} 2>&1)
 

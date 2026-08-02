@@ -17,7 +17,7 @@ echo "Running leaderlogs for ${LSET} epoch ${EPOCH}"
 
 mkdir -p ${NODE_PATH}/leaderlogs
 
-cardano-cli query leadership-schedule \
+cardano-cli latest query leadership-schedule \
    ${NETWORK_ARGUMENT} \
    --genesis ${NODE_PATH}/shelley-genesis.json \
    --stake-pool-id ${POOL_ID} \
